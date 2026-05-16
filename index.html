@@ -3,1262 +3,1250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>團購下單系統</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>半吊子廚房｜團購下單</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
-:root{
-  --bg:#F7F3EE;--surface:#FFF;--surface-warm:#FBF9F6;
-  --border:#DDD5CA;--border-soft:#EAE4DC;
-  --text:#1C1008;--text-muted:#7A6A5A;--text-faint:#B5A898;
-  --accent:#C4622D;--accent-hover:#A84E20;--accent-light:#F5EAE0;--accent-text:#7A3010;
-  --green:#3D7848;--green-light:#EAF3EC;--green-text:#1E4D28;
-  --red:#C0392B;--red-light:#FEE8E6;--red-text:#8B1A10;
-  --amber:#A07010;--amber-light:#FEF4D8;--amber-text:#6B4A00;
-  --purple:#5B3F9A;--purple-light:#EDE8FB;
-  --shadow-sm:0 1px 3px rgba(28,16,8,.07),0 1px 2px rgba(28,16,8,.04);
-  --shadow:0 2px 8px rgba(28,16,8,.08),0 1px 3px rgba(28,16,8,.05);
-  --shadow-md:0 4px 16px rgba(28,16,8,.10),0 2px 6px rgba(28,16,8,.06);
-  --radius-sm:8px;--radius:14px;--radius-lg:20px;
-  --font-serif:"Noto Serif TC",serif;--font-sans:"Noto Sans TC",-apple-system,sans-serif;
+:root {
+  --bg: #F7F3EE;
+  --surface: #FFFFFF;
+  --accent: #C4622D;
+  --accent-hover: #A84E20;
+  --accent-light: rgba(196,98,45,0.10);
+  --green: #3D7848;
+  --green-light: rgba(61,120,72,0.10);
+  --red: #C0392B;
+  --red-light: rgba(192,57,43,0.10);
+  --amber: #A07010;
+  --amber-light: rgba(160,112,16,0.10);
+  --purple: #5B3F9A;
+  --purple-light: rgba(91,63,154,0.10);
+  --text: #1C1008;
+  --text-muted: #7A6A5A;
+  --border: #E8E0D5;
+  --r-sm: 8px;
+  --r-card: 14px;
+  --r-lg: 20px;
+  --r-pill: 100px;
+  --shadow: 0 2px 12px rgba(28,16,8,0.07);
+  --shadow-md: 0 4px 24px rgba(28,16,8,0.12);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;background:var(--bg)}
-body{font-family:var(--font-sans);font-size:15px;color:var(--text);-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(circle at 80% 10%,rgba(196,98,45,.06) 0%,transparent 50%),
-    radial-gradient(circle at 20% 80%,rgba(61,120,72,.05) 0%,transparent 45%);}
-#root{max-width:520px;margin:0 auto;padding:20px 16px 48px;min-height:100vh}
-input,select,textarea{display:block;width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:15px;font-family:var(--font-sans);outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
-input::placeholder,textarea::placeholder{color:var(--text-faint)}
-input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(196,98,45,.12)}
-textarea{resize:vertical;line-height:1.65}
-button{cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:500;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);color:var(--text);padding:9px 18px;transition:background .15s,border-color .15s,transform .1s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
-button:hover{background:var(--surface-warm)}
-button:active{transform:scale(.97)}
-button:disabled{opacity:.45;cursor:default;transform:none}
-.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;letter-spacing:.02em;box-shadow:0 2px 8px rgba(196,98,45,.28)}
-.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);box-shadow:0 4px 14px rgba(196,98,45,.32)}
-.btn-primary:disabled{background:var(--accent);border-color:var(--accent)}
-.btn-ghost{background:transparent;border-color:transparent;color:var(--text-muted);font-size:13px}
-.btn-ghost:hover{background:var(--surface-warm);border-color:var(--border-soft)}
-.btn-danger{color:var(--red);border-color:#f5c0bb}
-.btn-danger:hover{background:var(--red-light);border-color:#f5c0bb}
-.btn-back{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--text-muted);background:transparent;border:none;padding:4px 0}
-.btn-back:hover{color:var(--text);background:transparent}
-.card{background:var(--surface);border:1.5px solid var(--border-soft);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm)}
-.pill{display:inline-flex;align-items:center;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;letter-spacing:.01em;gap:4px}
-.pill-deadline{background:var(--amber-light);color:var(--amber-text)}
-.pill-deadline-passed{background:var(--red-light);color:var(--red-text)}
-.pill-delivery{background:var(--green-light);color:var(--green-text)}
-.pill-full{background:var(--red-light);color:var(--red-text)}
-.pill-limit{background:var(--purple-light);color:var(--purple)}
-.pill-almost{background:#FEF0E6;color:#C45000}
-.field{margin-bottom:14px}
-.field-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;letter-spacing:.04em}
-.stepper{display:flex;align-items:center;gap:12px}
-.stepper-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;padding:0;border:1.5px solid var(--border);background:var(--surface);color:var(--text);flex-shrink:0;box-shadow:var(--shadow-sm);transition:background .15s,border-color .15s,box-shadow .15s,transform .1s}
-.stepper-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(196,98,45,.18)}
-.stepper-btn:active{transform:scale(.9)}
-.stepper-val{min-width:28px;text-align:center;font-weight:700;font-size:18px;color:var(--text)}
-.product-item{padding:16px 0;border-bottom:1px solid var(--border-soft)}
-.product-item:last-child{border-bottom:none}
-.product-name{font-family:var(--font-serif);font-weight:600;font-size:16px;color:var(--text)}
-.variant-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0 10px 14px;border-top:1px dashed var(--border-soft)}
-.info-box{border-radius:var(--radius);padding:16px}
-.info-box-amber{background:var(--amber-light);border:1.5px solid #F0D080}
-.info-box-green{background:var(--green-light);border:1.5px solid #A8D4B0}
-.info-box-accent{background:var(--accent-light);border:1.5px solid #E8BCA0}
-.toast{background:var(--text);color:#fff;border-radius:100px;padding:10px 20px;font-size:13px;font-weight:500;text-align:center;margin-bottom:16px;box-shadow:var(--shadow-md);animation:toastIn .2s ease}
-@keyframes toastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.loading-wrap{padding:4rem;text-align:center}
-.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin:0 3px;animation:ldot 1.2s infinite ease-in-out}
-.loading-dot:nth-child(2){animation-delay:.2s}
-.loading-dot:nth-child(3){animation-delay:.4s}
-@keyframes ldot{0%,80%,100%{transform:scale(.65);opacity:.35}40%{transform:scale(1);opacity:1}}
-.progress-bar{height:6px;background:var(--border-soft);border-radius:3px;overflow:hidden}
-.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
-.row{display:flex;gap:8px;align-items:center}
-.lbl{font-size:13px;color:var(--text-muted);display:block;margin-bottom:5px}
-.tag{display:inline-flex;align-items:center;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:500}
-.success-icon{width:70px;height:70px;border-radius:50%;background:var(--green-light);border:2.5px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
-@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
-.admin-stat{background:var(--surface-warm);border:1.5px solid var(--border-soft);border-radius:var(--radius);padding:14px 10px;text-align:center}
-.admin-stat-label{font-size:11px;color:var(--text-faint);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
-.admin-stat-value{font-size:22px;font-weight:700;font-family:var(--font-serif);color:var(--text)}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;}
+h1,h2,h3{font-family:'Noto Serif TC',serif;}
+.container{max-width:640px;margin:0 auto;padding:0 16px 96px;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
+.header-brand{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:.04em;}
+.header-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.card{background:var(--surface);border-radius:var(--r-card);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-lg{border-radius:var(--r-lg);padding:24px;}
+.section-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:5px;}
+.field label .req{color:var(--red);}
+input,textarea,select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Noto Sans TC',sans-serif;font-size:15px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;appearance:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:72px;line-height:1.65;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 22px;border:none;border-radius:var(--r-sm);font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;width:100%;}
+.btn-primary:hover{background:var(--accent-hover);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-outline{background:transparent;color:var(--accent);border:1.5px solid var(--accent);}
+.btn-outline:hover{background:var(--accent);color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1.5px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#a93224;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:#2e5c38;}
+.btn-sm{padding:6px 13px;font-size:13px;}
+.btn-full{width:100%;}
+.qty-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:all .15s;flex-shrink:0;line-height:1;}
+.qty-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.qty-btn:disabled{opacity:.28;cursor:not-allowed;}
+.qty-val{font-size:18px;font-weight:600;min-width:30px;text-align:center;}
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--r-pill);font-size:12px;font-weight:500;line-height:1.4;}
+.tag-accent{background:var(--accent-light);color:var(--accent);}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-red{background:var(--red-light);color:var(--red);}
+.tag-amber{background:var(--amber-light);color:var(--amber);}
+.tag-purple{background:var(--purple-light);color:var(--purple);}
+.tag-gray{background:rgba(122,106,90,.1);color:var(--text-muted);}
+.product-card{background:var(--surface);border-radius:var(--r-card);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);border:1.5px solid transparent;transition:border-color .2s;}
+.product-card.active{border-color:var(--accent);}
+.product-name{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;color:var(--text);}
+.product-price{font-size:17px;font-weight:700;color:var(--accent);}
+.product-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:10px;}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s;}
+.order-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;gap:8px;}
+.order-row:last-child{border-bottom:none;}
+.order-total{display:flex;justify-content:space-between;padding:12px 0 0;font-weight:700;font-size:17px;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--surface);border-radius:var(--r-card);padding:12px 8px;text-align:center;box-shadow:var(--shadow);}
+.stat-val{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--accent);}
+.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.pill-tabs{display:flex;background:var(--surface);border-radius:var(--r-pill);padding:4px;margin-bottom:14px;box-shadow:var(--shadow);}
+.pill-tab{flex:1;padding:8px 6px;text-align:center;font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;border-radius:var(--r-pill);transition:all .2s;}
+.pill-tab.active{background:var(--accent);color:#fff;}
+.scroll-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.scroll-tabs::-webkit-scrollbar{display:none;}
+.scroll-tab{flex-shrink:0;padding:8px 15px;border-radius:var(--r-pill);font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);transition:all .2s;white-space:nowrap;}
+.scroll-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.alert{padding:11px 14px;border-radius:var(--r-sm);font-size:14px;margin-bottom:11px;line-height:1.55;}
+.alert-amber{background:var(--amber-light);color:var(--amber);border-left:3px solid var(--amber);}
+.alert-red{background:var(--red-light);color:var(--red);border-left:3px solid var(--red);}
+.alert-green{background:var(--green-light);color:var(--green);border-left:3px solid var(--green);}
+.page-top{padding:20px 0 14px;}
+.page-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;}
+.page-desc{font-size:14px;color:var(--text-muted);margin-top:6px;white-space:pre-line;}
+.info-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--text-muted);margin-top:6px;margin-right:10px;}
+.done-circle{width:68px;height:68px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;}
+.loading{text-align:center;padding:56px 16px;color:var(--text-muted);}
+.footer-links{text-align:center;padding:16px;display:flex;justify-content:center;gap:22px;}
+.footer-link{font-size:13px;color:var(--text-muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.footer-link:hover{color:var(--accent);}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.order-item{background:var(--surface);border-radius:var(--r-card);padding:14px;margin-bottom:9px;box-shadow:var(--shadow);}
+.order-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;}
+.order-person{font-weight:600;font-size:15px;}
+.order-time{font-size:12px;color:var(--text-muted);}
+.order-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+.order-sum{font-weight:700;color:var(--accent);font-size:15px;}
+.modal-bg{position:fixed;inset:0;background:rgba(28,16,8,.48);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;}
+.modal{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) var(--r-sm) var(--r-sm);width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:24px;}
+.modal-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;margin-bottom:16px;}
+.modal-actions{display:flex;gap:9px;margin-top:18px;}
+.back-btn{display:inline-flex;align-items:center;gap:4px;color:var(--text-muted);font-size:14px;cursor:pointer;padding:8px 0 10px;}
+.back-btn:hover{color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.prod-editor{background:var(--bg);border-radius:var(--r-card);padding:15px;margin-bottom:11px;border:1.5px solid var(--border);}
+.prod-editor-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;}
+.input-row{display:flex;gap:8px;}
+.input-row input{flex:1;}
+.empty-state{text-align:center;padding:48px 16px;color:var(--text-muted);font-size:14px;}
+.pickup-stat-bar{display:flex;gap:16px;padding:11px 15px;background:var(--surface);border-radius:var(--r-card);margin-bottom:12px;box-shadow:var(--shadow);font-size:13px;}
+.pickup-stat{color:var(--text-muted);}
+.pickup-stat b{color:var(--text);font-weight:700;}
+.pickup-result{background:var(--surface);border-radius:var(--r-card);padding:15px;margin-bottom:10px;box-shadow:var(--shadow);}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.copy-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;background:var(--bg);border:1.5px solid var(--border);color:var(--text-muted);transition:all .2s;font-family:'Noto Sans TC',sans-serif;}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .3s ease;}
+.center-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.center-logo{font-family:'Noto Serif TC',serif;font-size:30px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.center-sub{font-size:14px;color:var(--text-muted);margin-bottom:30px;}
+.center-card{background:var(--surface);border-radius:var(--r-lg);padding:28px 24px;width:100%;max-width:360px;box-shadow:var(--shadow-md);}
+.sticky-foot{position:sticky;bottom:16px;z-index:50;}
+@media(max-width:480px){.form-row{grid-template-columns:1fr;}.stat-val{font-size:18px;}}
 </style>
 </head>
 <body>
 <div id="root"></div>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAlx_n5YaGSpnAX-8GQdSBt7lr_2M0PPmQ",
-  authDomain: "my-groupbuy.firebaseapp.com",
-  projectId: "my-groupbuy",
-  storageBucket: "my-groupbuy.firebasestorage.app",
-  messagingSenderId: "58893121747",
-  appId: "1:58893121747:web:7f778ae5feb13d603b7c26"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-</script>
 <script type="text/babel">
-const {useState,useEffect,useRef} = React;
-const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const { useState, useEffect, useRef } = React;
 
-const DEFAULT_CONFIG = {
-  title: "美食團購",
-  description: "",
-  deliveryDate: "",
-  deadline: "",
-  products: [
-    {id:"p1", name:"酸種麵包", price:0, stock:0, perLimit:0, deadline:"", deliveryDate:"", variants:[
-      {id:"p1v1", name:"原味", price:180, stock:20, perLimit:0},
-      {id:"p1v2", name:"核桃", price:200, stock:10, perLimit:0},
-    ]},
-  ],
-  adminPass: "0000",
-  accessCode: "",
-  pickupNote: "",
-  roundId: genId(),
-  roundName: "第1團"
+// ══════════════════════════════════════════════════════
+//  ⚙️  Firebase 設定  ── 請填入您的 Firebase 專案資訊
+// ══════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAlx_n5YaGSpnAX-8GQdSBt7lr_2M0PPmQ",
+  authDomain:        "my-groupbuy.firebaseapp.com",
+  projectId:         "my-groupbuy",
+  storageBucket:     "my-groupbuy.firebasestorage.app",
+  messagingSenderId: "58893121747",
+  appId:             "1:58893121747:web:7f778ae5feb13d603b7c26"
 };
 
-// ── Firestore helpers ──────────────────────────────────────────
-async function fsLoadConfig() {
-  try {
-    const doc = await db.collection("config").doc("main").get();
-    if (doc.exists) {
-      const cfg = doc.data();
-      cfg.products = (cfg.products||[]).map(p => ({stock:0, perLimit:0, deadline:"", deliveryDate:"", variants:[], ...p,
-        variants: (p.variants||[]).map(v => ({stock:0, perLimit:0, ...v}))
-      }));
-      return cfg;
-    }
-  } catch(e) {}
-  return DEFAULT_CONFIG;
-}
+let db = null;
+try {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.firestore();
+} catch(e) { console.error(e); }
 
-async function fsSaveConfig(cfg) {
-  await db.collection("config").doc("main").set(cfg);
-}
+// ── Helpers ──────────────────────────────────────────
+const fmtTs = ts => {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+const fmtMoney = n => `NT$ ${(n||0).toLocaleString()}`;
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const isPast = dl => dl ? new Date() > new Date(dl) : false;
 
-async function fsLoadOrders() {
-  const snap = await db.collection("orders").orderBy("ts","desc").get();
-  return snap.docs.map(d => ({_id: d.id, ...d.data()}));
-}
+const copyText = (text, cb) => {
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(cb).catch(()=>{}); return; }
+  const el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  cb && cb();
+};
 
-async function fsAddOrder(order) {
-  await db.collection("orders").add(order);
-}
+const downloadCSV = (rows, filename) => {
+  const bom = '\uFEFF';
+  const content = bom + rows.map(r => r.map(c => `"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
 
-async function fsDeleteOrder(id) {
-  await db.collection("orders").doc(id).delete();
-}
+// ── Firestore ops ─────────────────────────────────────
+const getConfig = async () => {
+  const snap = await db.collection('config').doc('main').get();
+  return snap.exists ? snap.data() : null;
+};
+const saveConfig = async data => db.collection('config').doc('main').set(data, {merge:true});
 
-async function fsUpdateOrder(id, data) {
-  await db.collection("orders").doc(id).update(data);
-}
+const getOrders = async (roundId=null) => {
+  let q = db.collection('orders');
+  if (roundId) q = q.where('roundId','==',roundId);
+  const snap = await q.orderBy('ts','desc').get();
+  return snap.docs.map(d => ({id:d.id,...d.data()}));
+};
+const submitOrder = async order => db.collection('orders').add(order);
+const updateOrder = async (id, data) => db.collection('orders').doc(id).update(data);
+const deleteOrder = async id => db.collection('orders').doc(id).delete();
 
-async function fsClearAll(orders) {
-  const batch = db.batch();
-  orders.forEach(o => batch.delete(db.collection("orders").doc(o._id)));
-  await batch.commit();
-}
-
-// ── App ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+//  App
+// ══════════════════════════════════════════════════════
 function App() {
-  const [view, setView] = useState("order");
-  const [config, setConfig] = useState(null);
-  const [orders, setOrders] = useState([]);
-  const [usedQtys, setUsedQtys] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState("");
-  const toastRef = useRef(null);
+  const [page, setPage] = useState('loading');
+  const [cfg, setCfg]   = useState(null);
+  const [accessOk, setAccessOk] = useState(false);
+  const [orderDraft, setOrderDraft] = useState(null);
+  const [donedOrder, setDoneOrder] = useState(null);
 
-  const [custNickname, setCustNickname] = useState("");
-  const [custPhone, setCustPhone] = useState("");
-  const [custNote, setCustNote] = useState("");
-  const [orderErr, setOrderErr] = useState("");
-  const [accessInput, setAccessInput] = useState("");
-  const [accessErr, setAccessErr] = useState("");
-  const [accessPassed, setAccessPassed] = useState(false);
-  const [qtys, setQtys] = useState({});
-  const [pending, setPending] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [lastOrderId, setLastOrderId] = useState(null);
+  useEffect(()=>{ init(); }, []);
 
-  const [passInput, setPassInput] = useState("");
-  const [passErr, setPassErr] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const [sTitle, setSTitle] = useState("");
-  const [sDesc, setSDesc] = useState("");
-  const [sDelivery, setSDelivery] = useState("");
-  const [sDeadline, setSDeadline] = useState("");
-  const [sProds, setSProds] = useState([]);
-  const [sPass, setSPass] = useState("");
-  const [sAccessCode, setSAccessCode] = useState("");
-  const [sPickupNote, setSPickupNote] = useState("");
-  const [sRoundName, setSRoundName] = useState("");
-  const [showAllRounds, setShowAllRounds] = useState(false);
-  const [confirmNewRound, setConfirmNewRound] = useState(false);
-  const [newRoundName, setNewRoundName] = useState("");
-  const [newPN, setNewPN] = useState("");
-  const [newPP, setNewPP] = useState("");
-  const [newPS, setNewPS] = useState("");
-  const [newPL, setNewPL] = useState("");
-  const [confirmDel, setConfirmDel] = useState(null);
-  const [confirmClear, setConfirmClear] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState(null);
-  const [editNickname, setEditNickname] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editNote, setEditNote] = useState("");
-  const [editItems, setEditItems] = useState([]);
-  const [exportTxt, setExportTxt] = useState("");
-  const [queryPhone, setQueryPhone] = useState("");
-  const [queryResults, setQueryResults] = useState(null);
-
-  function showToast(m) {
-    setToast(m);
-    clearTimeout(toastRef.current);
-    toastRef.current = setTimeout(() => setToast(""), 2500);
-  }
-
-  async function init() {
-    setLoading(true);
-    const cfg = await fsLoadConfig();
-    setConfig(cfg);
-    // init qtys: for products with variants use variantId, otherwise productId
-    const initQtys = {};
-    cfg.products.forEach(p => {
-      if (p.variants && p.variants.length > 0) {
-        p.variants.forEach(v => { initQtys[v.id] = 0; });
-      } else {
-        initQtys[p.id] = 0;
-      }
-    });
-    setQtys(initQtys);
-    setSTitle(cfg.title); setSDesc(cfg.description||"");
-    setSDelivery(cfg.deliveryDate||""); setSDeadline(cfg.deadline||"");
-    setSProds([...cfg.products]); setSPass(cfg.adminPass); setSAccessCode(cfg.accessCode||""); setSPickupNote(cfg.pickupNote||""); setSRoundName(cfg.roundName||"第1團");
-    await doLoadOrders();
-    setLoading(false);
-  }
-
-  async function doLoadOrders() {
+  const init = async () => {
+    if (!db) { setPage('db-error'); return; }
     try {
-      const list = await fsLoadOrders();
-      setOrders(list);
-      const uq = {};
-      list.forEach(o => (o.items||[]).forEach(i => { uq[i.id] = (uq[i.id]||0) + i.qty; }));
-      setUsedQtys(uq);
-    } catch(e) { setOrders([]); setUsedQtys({}); }
-  }
+      const c = await getConfig();
+      setCfg(c);
+      if (!c || !c.adminPass) { setPage('setup'); return; }
+      if (c.accessCode && !accessOk) { setPage('access'); return; }
+      setPage('order');
+    } catch(e) { setPage('db-error'); }
+  };
 
-  useEffect(() => { init(); }, []);
+  const refreshCfg = async () => {
+    const c = await getConfig();
+    setCfg(c);
+    return c;
+  };
 
-  const deadlinePassed = () => config?.deadline && new Date() > new Date(config.deadline);
-  const prodDeadlinePassed = (p) => p.deadline && new Date() > new Date(p.deadline);
+  const goto = p => setPage(p);
 
-  function getRemaining(id, stock) {
-    if (!stock || stock === 0) return Infinity;
-    return Math.max(0, stock - (usedQtys[id]||0));
-  }
+  if (page === 'loading') return <div className="loading"><div style={{fontSize:36,marginBottom:12}}>🍪</div>載入中…</div>;
+  if (page === 'db-error') return (
+    <div className="loading">
+      <div style={{fontSize:28,marginBottom:10}}>⚠️</div>
+      <div style={{fontWeight:600}}>無法連接 Firebase</div>
+      <div style={{fontSize:13,marginTop:8,color:'var(--text-muted)'}}>請確認 FIREBASE_CONFIG 設定是否正確</div>
+    </div>
+  );
+  if (page === 'access') return <AccessPage cfg={cfg} onOk={()=>{ setAccessOk(true); setPage('order'); }} />;
+  if (page === 'order') return <OrderPage cfg={cfg} onConfirm={d=>{ setOrderDraft(d); setPage('confirm'); }} goto={goto} />;
+  if (page === 'confirm') return <ConfirmPage cfg={cfg} draft={orderDraft} onBack={()=>setPage('order')} onDone={o=>{ setDoneOrder(o); setPage('done'); }} />;
+  if (page === 'done') return <DonePage order={donedOrder} onBack={()=>setPage('order')} />;
+  if (page === 'query') return <QueryPage onBack={()=>setPage('order')} />;
+  if (page === 'admin-login') return <AdminLogin cfg={cfg} onOk={()=>setPage('orders')} onBack={()=>setPage('order')} />;
+  if (page === 'orders') return <AdminOrders cfg={cfg} refreshCfg={refreshCfg} goto={goto} />;
+  if (page === 'pickup') return <PickupPage cfg={cfg} onBack={()=>setPage('orders')} />;
+  if (page === 'setup') return <SetupPage cfg={cfg} onSaved={async ()=>{ await refreshCfg(); setPage('orders'); }} onBack={cfg?()=>setPage('orders'):null} />;
+  return null;
+}
 
-  function setQtyFor(id, v, stock, perLimit) {
-    const rem = getRemaining(id, stock);
-    const stockMax = rem === Infinity ? 99 : rem;
-    const perMax = perLimit > 0 ? perLimit : 99;
-    const max = Math.min(stockMax, perMax);
-    setQtys(q => ({...q, [id]: Math.max(0, Math.min(max, parseInt(v)||0))}));
-  }
+// ══════════════════════════════════════════════════════
+//  Access
+// ══════════════════════════════════════════════════════
+function AccessPage({ cfg, onOk }) {
+  const [code, setCode] = useState('');
+  const [err, setErr]   = useState('');
+  const submit = () => code.trim() === cfg.accessCode ? onOk() : setErr('入場碼錯誤，請再試一次');
+  return (
+    <div className="center-page">
+      <div className="center-logo">半吊子廚房</div>
+      <div className="center-sub">The Half Kitchen</div>
+      <div className="center-card fade-up">
+        <h2 style={{fontFamily:'Noto Serif TC',fontSize:18,marginBottom:16}}>請輸入入場碼</h2>
+        <div className="field">
+          <input type="text" value={code} onChange={e=>setCode(e.target.value)} placeholder="入場碼" onKeyDown={e=>e.key==='Enter'&&submit()} autoFocus />
+        </div>
+        {err && <div className="alert alert-red" style={{marginBottom:12}}>{err}</div>}
+        <button className="btn btn-primary" onClick={submit}>進入 →</button>
+      </div>
+    </div>
+  );
+}
 
-  function calcTotal() {
-    let total = 0;
-    (config?.products||[]).forEach(p => {
-      if (p.variants && p.variants.length > 0) {
-        p.variants.forEach(v => { total += (qtys[v.id]||0) * v.price; });
-      } else {
-        total += (qtys[p.id]||0) * p.price;
-      }
+// ══════════════════════════════════════════════════════
+//  Order Page
+// ══════════════════════════════════════════════════════
+function OrderPage({ cfg, onConfirm, goto }) {
+  const [nickname, setNickname] = useState('');
+  const [phone, setPhone]       = useState('');
+  const [note, setNote]         = useState('');
+  const [qty, setQty]           = useState({});
+  const [err, setErr]           = useState('');
+
+  if (!cfg) return <div className="loading">載入中…</div>;
+
+  const products = cfg.products || [];
+  const closed = isPast(cfg.deadline);
+
+  const key = (pi, vi=-1) => vi===-1 ? `p${pi}` : `p${pi}v${vi}`;
+
+  const changeQty = (k, delta, stock, perLimit) => {
+    setQty(prev => {
+      let v = (prev[k]||0) + delta;
+      v = Math.max(0, v);
+      if (perLimit > 0) v = Math.min(v, perLimit);
+      if (stock > 0) v = Math.min(v, stock);
+      return {...prev, [k]: v};
     });
-    return total;
-  }
+  };
 
-  function handleNext() {
-    if (!custNickname.trim()) { setOrderErr("請填寫群組暱稱"); return; }
-    if (!custPhone.trim()) { setOrderErr("請填寫電話"); return; }
-    const phone = custPhone.trim();
-    const phoneReg = /^[0-9+\-\s]{6,15}$/;
-    if (!phoneReg.test(phone)) { setOrderErr("請填寫正確的電話號碼"); return; }
+  const buildItems = () => {
     const items = [];
-    for (const p of (config.products||[])) {
-      const pDeadline = p.deadline && new Date() > new Date(p.deadline);
-      if (p.variants && p.variants.length > 0) {
-        for (const v of p.variants) {
-          const qty = qtys[v.id]||0;
-          if (qty <= 0) continue;
-          if (pDeadline) { setOrderErr(`「${p.name}」已截止下單`); return; }
-          const rem = getRemaining(v.id, v.stock);
-          if (rem !== Infinity && qty > rem) { setOrderErr(`「${p.name} - ${v.name}」剩餘數量不足`); return; }
-          if (v.perLimit > 0 && qty > v.perLimit) { setOrderErr(`「${p.name} - ${v.name}」每人限購 ${v.perLimit} 份`); return; }
-          items.push({id:v.id, name:`${p.name}｜${v.name}`, productId:p.id, productName:p.name, variantName:v.name, price:v.price, qty, stock:v.stock, perLimit:v.perLimit, deadline:p.deadline, deliveryDate:p.deliveryDate||""});
-        }
+    products.forEach((p, pi) => {
+      if (p.variants && p.variants.length) {
+        p.variants.forEach((v, vi) => {
+          const q = qty[key(pi,vi)] || 0;
+          if (q > 0) items.push({name:p.name, variant:v.name, price:v.price||p.price||0, qty:q, subtotal:q*(v.price||p.price||0)});
+        });
       } else {
-        const qty = qtys[p.id]||0;
-        if (qty <= 0) continue;
-        if (pDeadline) { setOrderErr(`「${p.name}」已截止下單`); return; }
-        const rem = getRemaining(p.id, p.stock);
-        if (rem !== Infinity && qty > rem) { setOrderErr(`「${p.name}」剩餘數量不足`); return; }
-        if (p.perLimit > 0 && qty > p.perLimit) { setOrderErr(`「${p.name}」每人限購 ${p.perLimit} 份`); return; }
-        items.push({id:p.id, name:p.name, productId:p.id, productName:p.name, variantName:"", price:p.price, qty, stock:p.stock, perLimit:p.perLimit, deadline:p.deadline, deliveryDate:p.deliveryDate||""});
+        const q = qty[key(pi)] || 0;
+        if (q > 0) items.push({name:p.name, price:p.price||0, qty:q, subtotal:q*(p.price||0)});
       }
-    }
-    if (!items.length) { setOrderErr("請至少選擇一項商品"); return; }
-    setOrderErr("");
-    setPending({name:`${custNickname.trim()}（${phone}）`, nickname:custNickname.trim(), phone, items, note:custNote.trim(), total:calcTotal(), ts:Date.now()});
-    setView("confirm");
-  }
-
-  async function handleConfirmSubmit() {
-    setSubmitting(true);
-    try {
-      if (deadlinePassed()) { showToast("下單時間已截止"); setView("order"); setSubmitting(false); return; }
-      for (const it of pending.items) {
-        if (it.deadline && new Date() > new Date(it.deadline)) {
-          showToast(`「${it.name}」已截止下單，請重新選擇`);
-          setView("order"); setSubmitting(false); return;
-        }
-      }
-      // Fresh stock check
-      const freshList = await fsLoadOrders();
-      const freshUq = {};
-      freshList.forEach(o => (o.items||[]).forEach(i => { freshUq[i.id] = (freshUq[i.id]||0) + i.qty; }));
-      for (const it of pending.items) {
-        const prod = (config.products||[]).find(p => p.id === it.id);
-        if (prod?.stock > 0) {
-          const rem = prod.stock - (freshUq[it.id]||0);
-          if (it.qty > rem) {
-            showToast(`「${it.name}」已不足，請重新選擇`);
-            setView("order"); await doLoadOrders(); setSubmitting(false); return;
-          }
-        }
-      }
-      const docRef = await db.collection("orders").add(pending);
-      setLastOrderId(docRef.id);
-      setCustNickname(""); setCustPhone(""); setCustNote("");
-      const resetQtys = {};
-      (config.products||[]).forEach(p => {
-        if (p.variants && p.variants.length > 0) p.variants.forEach(v => { resetQtys[v.id]=0; });
-        else resetQtys[p.id]=0;
-      });
-      setQtys(resetQtys);
-      await doLoadOrders();
-      setView("done");
-    } catch(e) { showToast("送出失敗，請再試一次"); setView("order"); }
-    setSubmitting(false);
-  }
-
-  function loginAdmin() {
-    if (passInput === config.adminPass) {
-      setIsAdmin(true); setPassErr(""); setPassInput("");
-      doLoadOrders().then(() => setView("orders"));
-    } else { setPassErr("密碼錯誤"); }
-  }
-
-  async function saveConfig() {
-    const cfg = {
-      title: sTitle.trim()||"團購訂單",
-      description: sDesc.trim(),
-      deliveryDate: sDelivery.trim(),
-      deadline: sDeadline,
-      products: sProds.map(({_nv,_nvp,...p}) => ({...p, variants:(p.variants||[]).map(({...v})=>v)})),
-      adminPass: sPass.trim()||"0000",
-      accessCode: sAccessCode.trim(),
-      pickupNote: sPickupNote.trim(),
-      roundId: config.roundId || genId(),
-      roundName: sRoundName.trim() || "第1團"
-    };
-    try {
-      await fsSaveConfig(cfg);
-      setConfig(cfg);
-      const initQtys = {};
-      cfg.products.forEach(p => {
-        if (p.variants && p.variants.length > 0) {
-          p.variants.forEach(v => { initQtys[v.id] = 0; });
-        } else {
-          initQtys[p.id] = 0;
-        }
-      });
-      setQtys(initQtys);
-      await doLoadOrders();
-      showToast("設定已儲存");
-      setView("orders");
-    } catch(e) { showToast("儲存失敗，請重試"); }
-  }
-
-  async function deleteOrder(id) {
-    await fsDeleteOrder(id);
-    setConfirmDel(null);
-    await doLoadOrders();
-  }
-
-  function startEdit(o) {
-    setEditingOrderId(o._id);
-    setEditNickname(o.nickname || o.name || "");
-    setEditPhone(o.phone || "");
-    setEditNote(o.note || "");
-    setEditItems((o.items||[]).map(i => ({...i})));
-    setConfirmDel(null);
-  }
-
-  function setEditItemQty(id, qty) {
-    setEditItems(items => items.map(i => i.id === id ? {...i, qty: Math.max(0, qty)} : i));
-  }
-
-  async function saveEdit(orderId) {
-    const items = editItems.filter(i => i.qty > 0);
-    if (!items.length) { showToast("至少需要一項品項"); return; }
-    const total = items.reduce((s, i) => s + (i.price||0) * i.qty, 0);
-    const nickname = editNickname.trim();
-    const phone = editPhone.trim();
-    const updated = {
-      nickname,
-      phone,
-      name: `${nickname}（${phone}）`,
-      note: editNote.trim(),
-      items,
-      total,
-    };
-    try {
-      await fsUpdateOrder(orderId, updated);
-      await doLoadOrders();
-      setEditingOrderId(null);
-      showToast("訂單已更新");
-    } catch(e) { showToast("更新失敗，請重試"); }
-  }
-
-  async function clearAll() {
-    await fsClearAll(orders);
-    setConfirmClear(false);
-    await doLoadOrders();
-  }
-
-  async function startNewRound() {
-    const newCfg = {
-      ...config,
-      roundId: genId(),
-      roundName: newRoundName.trim() || `第${Date.now().toString().slice(-4)}團`,
-      deliveryDate: "",
-      deadline: "",
-      pickupNote: "",
-    };
-    await fsSaveConfig(newCfg);
-    setConfig(newCfg);
-    setSRoundName(newCfg.roundName);
-    setSDelivery(""); setSDeadline(""); setSPickupNote("");
-    setSTitle(newCfg.title); setSDesc(newCfg.description||"");
-    setSProds([...newCfg.products]); setSPass(newCfg.adminPass); setSAccessCode(newCfg.accessCode||"");
-    setConfirmNewRound(false);
-    setNewRoundName("");
-    setShowAllRounds(false);
-    await doLoadOrders();
-    showToast(`✓ 已開啟：${newCfg.roundName}`);
-    setView("setup");
-  }
-
-  function addProd() {
-    if (!newPN.trim()) return;
-    setSProds(p => [...p, {id:genId(), name:newPN.trim(), price:parseFloat(newPP)||0, stock:parseInt(newPS)||0, perLimit:parseInt(newPL)||0, deadline:"", deliveryDate:"", variants:[]}]);
-    setNewPN(""); setNewPP(""); setNewPS(""); setNewPL("");
-  }
-
-  function buildExport() {
-    const lines = [`【${config.title}】訂單彙整`, `共 ${orders.length} 筆｜${new Date().toLocaleDateString("zh-TW")}`, ""];
-    const pt = {};
-    orders.forEach(o => (o.items||[]).forEach(i => { if (!pt[i.name]) pt[i.name]={qty:0,price:i.price}; pt[i.name].qty+=i.qty; }));
-    lines.push("品項統計");
-    Object.entries(pt).forEach(([n,v]) => lines.push(`  ${n}：${v.qty} 份${v.price ? ` (NT$${v.price*v.qty})` : ""}`));
-    lines.push("", "訂購明細");
-    orders.forEach((o,i) => {
-      lines.push(`${i+1}. ${o.name}`);
-      (o.items||[]).forEach(it => lines.push(`   ${it.name} ×${it.qty}${it.price ? ` NT$${it.price*it.qty}` : ""}`));
-      if (o.note) lines.push(`   備註：${o.note}`);
-      if (o.total) lines.push(`   小計：NT$${o.total}`);
     });
-    const tot = orders.reduce((s,o) => s+(o.total||0), 0);
-    if (tot) lines.push("", `總金額：NT$${tot.toLocaleString()}`);
-    return lines.join("\n");
-  }
+    return items;
+  };
 
-  function downloadCSV() {
-    // 只匯出本團訂單，asc 排序
-    const roundOrders = showAllRounds ? orders : orders.filter(o => !o.roundId || o.roundId === config.roundId);
-    const sorted = [...roundOrders].sort((a, b) => a.ts - b.ts);
+  const total = buildItems().reduce((a,i)=>a+i.subtotal,0);
+  const hasItems = buildItems().length > 0;
 
-    // 以取貨時間分組
-    const grouped = {};
-    sorted.forEach(o => {
-      const byDate = {};
-      (o.items||[]).forEach(item => {
-        const dDate = item.deliveryDate || config.deliveryDate || "未指定取貨時間";
-        if (!byDate[dDate]) byDate[dDate] = [];
-        byDate[dDate].push({ name: item.name, qty: item.qty, price: item.price||0 });
-      });
-      Object.entries(byDate).forEach(([dDate, items]) => {
-        if (!grouped[dDate]) grouped[dDate] = [];
-        grouped[dDate].push({
-          nickname: o.nickname || o.name,
-          phone: o.phone || "",
-          note: o.note || "",
-          ts: o.ts,
-          items
-        });
-      });
+  const submit = () => {
+    if (!nickname.trim()) return setErr('請填寫群組暱稱');
+    if (!phone.trim()) return setErr('請填寫聯絡電話');
+    if (!/^[0-9]{8,10}$/.test(phone.replace(/[-\s]/g,''))) return setErr('電話格式不正確（8-10位數字）');
+    const items = buildItems();
+    if (!items.length) return setErr('請至少選擇一個品項');
+    setErr('');
+    onConfirm({
+      nickname: nickname.trim(), phone: phone.trim(), note: note.trim(),
+      items, total,
+      name: `${nickname.trim()}（${phone.trim()}）`,
+      roundId: cfg.roundId, roundName: cfg.roundName
     });
+  };
 
-    const sortedDates = Object.keys(grouped).sort();
-    const rows = [];
-
-    // ── 取貨核對表（橫式：每個品項一欄，每人一行）──
-    sortedDates.forEach(dDate => {
-      const custs = grouped[dDate];
-
-      // 收集此取貨時間出現的所有品項（依第一次出現順序）
-      const productOrder = [];
-      const productSet = new Set();
-      custs.forEach(cust => {
-        cust.items.forEach(item => {
-          if (!productSet.has(item.name)) {
-            productSet.add(item.name);
-            productOrder.push(item.name);
-          }
-        });
-      });
-
-      // 標題列：取貨時間
-      rows.push([`【取貨時間：${dDate}】`, ...Array(productOrder.length + 3).fill("")]);
-      // 欄位列：暱稱 | 電話 | [品項1] | [品項2] | ... | 消費金額 | 備註
-      rows.push(["暱稱", "電話", ...productOrder, "消費金額", "備註"]);
-
-      let dateTotal = 0;
-      custs.forEach(cust => {
-        const qtyMap = {};
-        cust.items.forEach(i => { qtyMap[i.name] = i.qty; });
-        const total = cust.items.reduce((s, i) => s + i.price * i.qty, 0);
-        dateTotal += total;
-        rows.push([
-          cust.nickname,
-          cust.phone,
-          ...productOrder.map(p => qtyMap[p] || ""),
-          total > 0 ? total : "",
-          cust.note
-        ]);
-      });
-
-      rows.push(["", `小計：${custs.length} 人`, ...Array(productOrder.length).fill(""), dateTotal > 0 ? dateTotal : "", ""]);
-      rows.push(Array(productOrder.length + 4).fill(""));
-    });
-
-    // ── 品項叫貨統計（依取貨時間分開，維持直式）──
-    rows.push(["【叫貨統計】", "", "", ""]);
-
-    sortedDates.forEach(dDate => {
-      const productTotals = {};
-      let dateRevenue = 0;
-      let dateOrders = 0;
-      roundOrders.forEach(o => {
-        (o.items||[]).forEach(item => {
-          const d = item.deliveryDate || config.deliveryDate || "未指定取貨時間";
-          if (d !== dDate) return;
-          if (!productTotals[item.name]) productTotals[item.name] = 0;
-          productTotals[item.name] += item.qty;
-          dateRevenue += (item.price||0) * item.qty;
-        });
-        const hasDate = (o.items||[]).some(item => (item.deliveryDate || config.deliveryDate || "未指定取貨時間") === dDate);
-        if (hasDate) dateOrders++;
-      });
-
-      rows.push([`取貨時間：${dDate}`, "", "", ""]);
-      rows.push(["品項", "", "數量", ""]);
-      Object.entries(productTotals).forEach(([name, qty]) => {
-        rows.push([name, "", qty, ""]);
-      });
-      rows.push(["小計訂單數", dateOrders, "小計金額", dateRevenue > 0 ? dateRevenue : ""]);
-      rows.push(["", "", "", ""]);
-    });
-
-    const csv = "\uFEFF" + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${config.title}_訂單_${new Date().toLocaleDateString("zh-TW").replace(/\//g,"-")}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function handleExport() {
-    const text = buildExport();
-    setExportTxt(text);
-    try { await navigator.clipboard.writeText(text); showToast("已複製到剪貼簿！"); } catch(e) {}
-  }
-
-  function fmtDeadline(dl) {
-    if (!dl) return null;
-    return new Date(dl).toLocaleString("zh-TW", {month:"numeric",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"});
-  }
-
-  // ── Shared UI atoms ──
-  const Toast = toast ? (
-    <div className="toast">{toast}</div>
-  ) : null;
-
-  if (loading) return (
-    <div className="loading-wrap">
-      <div style={{marginBottom:"12px"}}>
-        <span className="loading-dot"/><span className="loading-dot"/><span className="loading-dot"/>
+  return (
+    <div>
+      <div className="header">
+        <div className="header-brand">半吊子廚房</div>
+        <div className="header-sub">The Half Kitchen · {cfg.roundName||'團購下單'}</div>
       </div>
-      <div style={{fontSize:"13px",color:"var(--text-faint)"}}>載入中...</div>
-    </div>
-  );
-
-  // ── DONE ──
-  if (view === "done") {
-    const myOrder = lastOrderId ? orders.find(o=>o._id===lastOrderId) : null;
-    return (
-      <div style={{paddingTop:"2rem",textAlign:"center"}}>
-        {Toast}
-        <div className="success-icon">✓</div>
-        <p style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",marginBottom:"8px",color:"var(--text)"}}>訂單已送出！</p>
-        <p style={{color:"var(--text-muted)",fontSize:"14px",marginBottom:"24px",lineHeight:1.7}}>感謝您的訂購，我們已收到您的訂單。</p>
-        {myOrder && (
-          <div className="card" style={{marginBottom:"16px",textAlign:"left",border:"1.5px solid var(--border)"}}>
-            <p style={{fontWeight:600,fontSize:"13px",color:"var(--text-muted)",marginBottom:"12px",textAlign:"center",letterSpacing:".05em",textTransform:"uppercase"}}>🧾 訂單明細</p>
-            {(myOrder.items||[]).map(item => (
-              <div key={item.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid var(--border-soft)",fontSize:"14px"}}>
-                <span style={{color:"var(--text)"}}>{item.name}</span>
-                <span style={{color:"var(--text-muted)",fontWeight:600}}>×{item.qty}</span>
-              </div>
-            ))}
-            <p style={{fontSize:"12px",color:"var(--text-muted)",marginTop:"14px",lineHeight:1.8,textAlign:"center",padding:"10px",background:"var(--surface-warm)",borderRadius:"var(--radius-sm)"}}>
-              取貨時請告知<strong style={{color:"var(--text)"}}>群組暱稱</strong>與<strong style={{color:"var(--text)"}}>電話後四碼</strong>即可完成核對
-            </p>
-          </div>
-        )}
-        {config.deliveryDate && (
-          <div className="info-box info-box-amber" style={{marginBottom:"24px",fontSize:"14px",lineHeight:1.7,textAlign:"left"}}>
-            <span style={{fontWeight:600,color:"var(--amber-text)"}}>📦 取貨時間</span><br/>
-            <span style={{fontSize:"16px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--amber-text)"}}>{config.deliveryDate}</span><br/>
-            <span style={{fontSize:"13px",color:"var(--amber-text)",opacity:.8}}>請務必準時取貨，謝謝您的配合。</span>
-          </div>
-        )}
-        <button onClick={() => setView("order")} style={{padding:"10px 32px"}}>返回首頁</button>
-      </div>
-    );
-  }
-
-  // ── CONFIRM ──
-  if (view === "confirm") return (
-    <div style={{paddingBottom:"2rem"}}>
-      {Toast}
-      <p style={{fontSize:"12px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:"6px"}}>確認訂單</p>
-      <h2 style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",marginBottom:"20px",color:"var(--text)"}}>請確認您的訂購內容</h2>
-      <div className="info-box info-box-amber" style={{marginBottom:"20px"}}>
-        <p style={{fontWeight:700,fontSize:"13px",color:"var(--amber-text)",marginBottom:"10px",letterSpacing:".04em",textTransform:"uppercase"}}>⚠ 取貨說明，請仔細閱讀</p>
-        {config.deliveryDate && (
-          <p style={{fontSize:"15px",fontWeight:700,color:"var(--amber-text)",marginBottom:"8px",fontFamily:"var(--font-serif)"}}>
-            📦 取貨時間：{config.deliveryDate}
-          </p>
-        )}
-        {config.pickupNote ? (
-          <p style={{fontSize:"13px",color:"var(--amber-text)",lineHeight:1.8,whiteSpace:"pre-wrap"}}>{config.pickupNote}</p>
-        ) : (
-          <p style={{fontSize:"13px",color:"var(--amber-text)",lineHeight:1.8}}>
-            店內冰箱空間有限，商品<strong>無法長期存放</strong>。<br/>
-            如您無法於取貨時間準時取貨，請勿下單。<br/>
-            等確定能來取貨的日期再訂即可。
-          </p>
-        )}
-      </div>
-      <div className="card" style={{marginBottom:"20px"}}>
-        <p style={{fontSize:"12px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"12px"}}>訂單明細</p>
-        <div style={{display:"flex",gap:"16px",marginBottom:"14px",padding:"10px",background:"var(--surface-warm)",borderRadius:"var(--radius-sm)"}}>
+      <div className="container">
+        <div className="page-top">
+          <div className="page-title">{cfg.title||'團購下單'}</div>
+          {cfg.description && <div className="page-desc">{cfg.description}</div>}
           <div>
-            <p style={{fontSize:"11px",color:"var(--text-faint)",fontWeight:600,marginBottom:"2px"}}>GROUP暱稱</p>
-            <p style={{fontSize:"15px",fontWeight:600,color:"var(--text)"}}>{pending?.nickname}</p>
-          </div>
-          <div style={{width:"1px",background:"var(--border-soft)"}}/>
-          <div>
-            <p style={{fontSize:"11px",color:"var(--text-faint)",fontWeight:600,marginBottom:"2px"}}>電話</p>
-            <p style={{fontSize:"15px",fontWeight:600,color:"var(--text)"}}>{pending?.phone}</p>
+            {cfg.deliveryDate && <span className="info-chip">📦 {cfg.deliveryDate}</span>}
+            {cfg.deadline && (
+              <span className="info-chip" style={{color: closed?'var(--red)':'var(--amber)'}}>
+                ⏰ {closed?'已截止':'截止 '+new Date(cfg.deadline).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+              </span>
+            )}
           </div>
         </div>
-        {(pending?.items||[]).map(i => (
-          <div key={i.id} style={{padding:"10px 0",borderBottom:"1px solid var(--border-soft)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"14px",marginBottom:i.deliveryDate?"4px":"0"}}>
-              <span style={{fontWeight:500,color:"var(--text)"}}>{i.name} <span style={{color:"var(--text-muted)",fontWeight:400}}>×{i.qty}</span></span>
-              {i.price > 0 && <span style={{fontWeight:600,color:"var(--text)"}}>NT${(i.price*i.qty).toLocaleString()}</span>}
+
+        {closed && <div className="alert alert-red">⚠️ 此團購已截止，目前無法下單。</div>}
+
+        {!closed && <>
+          <div className="card">
+            <div className="section-label">購買者資料</div>
+            <div className="field">
+              <label>群組暱稱 <span className="req">*</span></label>
+              <input type="text" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="例：小明" />
             </div>
-            {i.deliveryDate && <p style={{fontSize:"12px",color:"var(--green-text)",margin:0}}>📦 {i.deliveryDate}</p>}
-          </div>
-        ))}
-        {pending?.note && <p style={{fontSize:"13px",color:"var(--text-muted)",marginTop:"10px",padding:"8px 10px",background:"var(--surface-warm)",borderRadius:"var(--radius-sm)"}}>備註：{pending.note}</p>}
-        {pending?.total > 0 && (
-          <div style={{display:"flex",justifyContent:"space-between",fontWeight:700,marginTop:"14px",paddingTop:"12px",borderTop:"1.5px solid var(--border-soft)",fontFamily:"var(--font-serif)",fontSize:"16px"}}>
-            <span>合計</span><span style={{color:"var(--accent)"}}>NT${pending.total.toLocaleString()}</span>
-          </div>
-        )}
-      </div>
-      <div className="row">
-        <button onClick={() => setView("order")} style={{flex:1}}>← 修改</button>
-        <button onClick={handleConfirmSubmit} disabled={submitting} className="btn-primary" style={{flex:2,padding:"13px"}}>
-          {submitting ? "送出中..." : "確認送出訂單"}
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── ADMIN LOGIN ──
-  if (view === "admin-login") return (
-    <div style={{maxWidth:"320px",margin:"0 auto",paddingTop:"3rem"}}>
-      {Toast}
-      <button className="btn-back" onClick={() => { setView("order"); setPassInput(""); setPassErr(""); }} style={{marginBottom:"24px"}}>← 返回</button>
-      <p style={{fontSize:"11px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:"6px"}}>管理員專區</p>
-      <h2 style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",marginBottom:"24px",color:"var(--text)"}}>請輸入管理密碼</h2>
-      <div className="field">
-        <label className="field-label">管理密碼</label>
-        <input type="password" value={passInput} onChange={e => { setPassInput(e.target.value); setPassErr(""); }}
-          onKeyDown={e => e.key === "Enter" && loginAdmin()} placeholder="••••••••" autoFocus />
-      </div>
-      {passErr && <p style={{color:"var(--red)",fontSize:"13px",marginBottom:"12px"}}>{passErr}</p>}
-      <button className="btn-primary" onClick={loginAdmin} style={{width:"100%",padding:"12px",marginTop:"4px"}}>登入</button>
-    </div>
-  );
-
-  // ── ADMIN ORDERS ──
-  if (view === "orders") {
-    const visibleOrders = showAllRounds ? orders : orders.filter(o => !o.roundId || o.roundId === config.roundId);
-    const ptotals = {};
-    visibleOrders.forEach(o => (o.items||[]).forEach(i => { ptotals[i.name] = (ptotals[i.name]||0) + i.qty; }));
-    const totalRev = visibleOrders.reduce((s,o) => s+(o.total||0), 0);
-    const allRounds = [...new Map(orders.filter(o=>o.roundId).map(o=>[o.roundId,{id:o.roundId,name:o.roundName||o.roundId}])).values()];
-    return (
-      <div>
-        {Toast}
-        <div className="row" style={{justifyContent:"space-between",marginBottom:"16px"}}>
-          <div>
-            <p style={{fontSize:"11px",color:"var(--text-faint)",fontWeight:600,letterSpacing:".08em",textTransform:"uppercase",marginBottom:"2px"}}>管理後台</p>
-            <h2 style={{fontSize:"18px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--text)"}}>{config.title}</h2>
-            <span style={{fontSize:"12px",color:"var(--accent)",fontWeight:600,background:"var(--accent-light)",padding:"2px 10px",borderRadius:"100px",display:"inline-block",marginTop:"4px"}}>📦 {config.roundName||"第1團"}</span>
-          </div>
-          <div className="row" style={{gap:"6px"}}>
-            <button onClick={() => { setSTitle(config.title);setSDesc(config.description||"");setSDelivery(config.deliveryDate||"");setSDeadline(config.deadline||"");setSProds([...config.products]);setSPass(config.adminPass);setSAccessCode(config.accessCode||"");setSPickupNote(config.pickupNote||"");setSRoundName(config.roundName||"第1團");setView("setup"); }} style={{fontSize:"13px",padding:"6px 14px"}}>⚙ 設定</button>
-            <button className="btn-ghost" onClick={() => { setIsAdmin(false); setView("order"); }} style={{fontSize:"13px",padding:"6px 12px"}}>登出</button>
-          </div>
-        </div>
-
-        {/* Round toggle */}
-        <div style={{display:"flex",gap:"6px",marginBottom:"12px",alignItems:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>setShowAllRounds(false)} style={{fontSize:"12px",padding:"5px 14px",background:!showAllRounds?"var(--text)":"var(--surface)",color:!showAllRounds?"#fff":"var(--text-muted)",border:"1.5px solid",borderColor:!showAllRounds?"var(--text)":"var(--border)",borderRadius:"100px",fontWeight:600}}>本團</button>
-          <button onClick={()=>setShowAllRounds(true)} style={{fontSize:"12px",padding:"5px 14px",background:showAllRounds?"var(--text)":"var(--surface)",color:showAllRounds?"#fff":"var(--text-muted)",border:"1.5px solid",borderColor:showAllRounds?"var(--text)":"var(--border)",borderRadius:"100px",fontWeight:600}}>所有團次 ({allRounds.length})</button>
-          <button onClick={()=>{setConfirmNewRound(true);setNewRoundName("");}} className="btn-primary" style={{fontSize:"12px",padding:"5px 14px",marginLeft:"auto"}}>＋ 開啟新一團</button>
-        </div>
-
-        {/* Confirm new round panel */}
-        {confirmNewRound && (
-          <div className="card" style={{marginBottom:"14px",border:"1.5px solid var(--accent)",background:"var(--accent-light)"}}>
-            <p style={{fontWeight:700,fontSize:"14px",color:"var(--accent-text)",marginBottom:"10px"}}>開啟新一團</p>
-            <p style={{fontSize:"13px",color:"var(--accent-text)",marginBottom:"12px",lineHeight:1.7}}>
-              舊訂單將完整保留，不受影響。<br/>新一團的取貨時間、截止時間、取貨說明會清空，請開團後重新設定。
-            </p>
-            <label style={{fontSize:"12px",fontWeight:600,color:"var(--accent-text)",display:"block",marginBottom:"6px"}}>新團次名稱</label>
-            <input value={newRoundName} onChange={e=>setNewRoundName(e.target.value)} placeholder={`例：第${allRounds.length+1}團、2025年6月第1團`} style={{marginBottom:"12px"}} />
-            <div className="row">
-              <button onClick={()=>setConfirmNewRound(false)} style={{flex:1}}>取消</button>
-              <button onClick={startNewRound} className="btn-primary" style={{flex:2}}>確認開啟新一團</button>
+            <div className="field" style={{marginBottom:0}}>
+              <label>聯絡電話 <span className="req">*</span></label>
+              <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="0912-345-678" />
             </div>
           </div>
-        )}
 
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginBottom:"16px"}}>
-          {[{l:"訂單數",v:visibleOrders.length},{l:"訂購人數",v:new Set(visibleOrders.map(o=>o.name)).size},{l:"總金額",v:`$${totalRev.toLocaleString()}`}].map(s => (
-            <div key={s.l} className="admin-stat">
-              <p className="admin-stat-label">{s.l}</p>
-              <p className="admin-stat-value">{s.v}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="card" style={{marginBottom:"14px"}}>
-          <p style={{fontSize:"11px",color:"var(--text-faint)",fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:"12px"}}>品項進度</p>
-          <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-            {(config.products||[]).map(p => {
-              const used = visibleOrders.reduce((s,o)=>s+(o.items||[]).filter(i=>i.id===p.id||i.productId===p.id).reduce((ss,i)=>ss+i.qty,0),0);
-              const hasLim = p.stock > 0;
-              const pct = hasLim ? Math.min(100, Math.round(used/p.stock*100)) : 0;
-              const full = hasLim && used >= p.stock;
-              return (
-                <div key={p.id}>
-                  <div className="row" style={{justifyContent:"space-between",marginBottom:"6px"}}>
-                    <span style={{fontSize:"13px",fontWeight:600,color:"var(--text)"}}>{p.name}</span>
-                    <span style={{fontSize:"12px",color:full?"var(--red)":"var(--text-muted)",fontWeight:full?700:400}}>
-                      {hasLim ? `${used} / ${p.stock}${full?" · 額滿":""}` : `已訂 ${used} 份`}
-                    </span>
-                  </div>
-                  {hasLim && (
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{width:`${pct}%`,background:full?"var(--red)":pct>70?"var(--amber)":"var(--green)"}}/>
-                    </div>
-                  )}
+          <div className="section-label" style={{padding:'2px 4px',marginBottom:8}}>選擇品項</div>
+          {products.map((p, pi) => {
+            const pClosed = isPast(p.deadline);
+            const hasVariants = p.variants && p.variants.length > 0;
+            const hasAny = hasVariants
+              ? p.variants.some((_,vi)=>(qty[key(pi,vi)]||0)>0)
+              : (qty[key(pi)]||0) > 0;
+            return (
+              <div key={pi} className={`product-card ${hasAny?'active':''}`}>
+                <div className="product-name">{p.name}</div>
+                {p.description && <div style={{fontSize:13,color:'var(--text-muted)',margin:'4px 0 0'}}>{p.description}</div>}
+                <div className="product-meta">
+                  {pClosed && <span className="tag tag-red">已截止</span>}
+                  {p.deliveryDate && <span className="tag tag-green">📦 {p.deliveryDate}</span>}
+                  {p.perLimit>0 && <span className="tag tag-purple">限購 {p.perLimit}</span>}
                 </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {Object.keys(ptotals).length > 0 && (
-          <div className="card" style={{marginBottom:"14px"}}>
-            <p style={{fontSize:"11px",color:"var(--text-faint)",fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",marginBottom:"10px"}}>品項統計</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
-              {Object.entries(ptotals).map(([n,q]) => (
-                <span key={n} style={{fontSize:"13px",background:"var(--surface-warm)",border:"1.5px solid var(--border-soft)",borderRadius:"var(--radius-sm)",padding:"4px 12px",color:"var(--text)",fontWeight:500}}>
-                  {n} <strong style={{color:"var(--accent)"}}>×{q}</strong>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"14px"}}>
-          <button onClick={handleExport} style={{flex:1,minWidth:"120px",fontSize:"13px",padding:"9px 12px"}}>複製彙整文字</button>
-          <button className="btn-primary" onClick={downloadCSV} style={{flex:1,minWidth:"120px",fontSize:"13px",padding:"9px 12px"}}>匯出 Excel（CSV）</button>
-          {!confirmClear
-            ? <button onClick={() => setConfirmClear(true)} className="btn-danger" style={{fontSize:"13px",padding:"9px 12px"}}>清除全部</button>
-            : <div className="row">
-                <span style={{fontSize:"13px",color:"var(--red)"}}>確定清除？</span>
-                <button onClick={clearAll} className="btn-danger" style={{fontSize:"12px",padding:"5px 10px"}}>確定</button>
-                <button onClick={() => setConfirmClear(false)} style={{fontSize:"12px",padding:"5px 10px"}}>取消</button>
-              </div>
-          }
-        </div>
-
-        {exportTxt && (
-          <div className="card" style={{marginBottom:"14px"}}>
-            <p style={{fontSize:"12px",color:"#888",marginBottom:"6px"}}>彙整文字（可手動複製）</p>
-            <textarea readOnly value={exportTxt} rows={8} style={{fontSize:"12px",fontFamily:"monospace",lineHeight:1.5}} onFocus={e => e.target.select()} />
-          </div>
-        )}
-
-        {orders.length === 0
-          ? <p style={{textAlign:"center",color:"#aaa",padding:"2rem 0",fontSize:"14px"}}>目前沒有訂單</p>
-          : (
-              <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-                {orders.map(o => (
-                  <div key={o._id} className="card">
-                    <div style={{marginBottom:"8px"}}>
-                      {showAllRounds && o.roundName && (
-                        <span style={{fontSize:"11px",fontWeight:600,color:"var(--accent)",background:"var(--accent-light)",padding:"2px 8px",borderRadius:"100px",display:"inline-block",marginBottom:"6px"}}>📦 {o.roundName}</span>
-                      )}
-                      <div className="row" style={{justifyContent:"space-between"}}>
-                        <span style={{fontWeight:700,fontSize:"15px",fontFamily:"var(--font-serif)",color:"var(--text)"}}>{o.name}</span>
-                        <div className="row" style={{gap:"8px"}}>
-                          {o.total > 0 && <span style={{fontSize:"13px",color:"var(--green)",fontWeight:700}}>NT${o.total.toLocaleString()}</span>}
-                          <span style={{fontSize:"11px",color:"var(--text-faint)"}}>{new Date(o.ts).toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</span>
+                {hasVariants ? <>
+                  <div className="divider" style={{margin:'12px 0 8px'}} />
+                  {p.variants.map((v, vi) => {
+                    const k = key(pi,vi);
+                    const q = qty[k]||0;
+                    const stock = v.stock||0;
+                    const full = stock>0 && q>=stock;
+                    const low  = stock>0 && stock-q<=5 && !full;
+                    return (
+                      <div key={vi} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                        <div>
+                          <div style={{fontSize:14,fontWeight:500}}>{v.name}</div>
+                          <div className="product-price" style={{fontSize:15}}>NT$ {(v.price||p.price||0).toLocaleString()}</div>
+                          {low && <span className="tag tag-amber" style={{marginTop:4}}>⚡ 僅剩 {stock-q}</span>}
+                          {full && <span className="tag tag-red" style={{marginTop:4}}>額滿</span>}
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:10}}>
+                          <button className="qty-btn" onClick={()=>changeQty(k,-1,stock,p.perLimit||0)} disabled={q===0||pClosed}>−</button>
+                          <span className="qty-val">{q}</span>
+                          <button className="qty-btn" onClick={()=>changeQty(k,1,stock,p.perLimit||0)} disabled={full||pClosed}>+</button>
                         </div>
                       </div>
-                    </div>
-                    <div style={{display:"flex",flexDirection:"column",gap:"3px",marginBottom:o.note?"8px":"6px"}}>
-                      {(o.items||[]).map(i => (
-                        <div key={i.id} style={{display:"flex",justifyContent:"space-between",fontSize:"13px"}}>
-                          <span style={{color:"var(--text-muted)"}}>{i.name} ×{i.qty}</span>
-                          {i.price > 0 && <span style={{color:"var(--text-faint)"}}>NT${(i.price*i.qty).toLocaleString()}</span>}
+                    );
+                  })}
+                </> : (() => {
+                  const k = key(pi);
+                  const q = qty[k]||0;
+                  const stock = p.stock||0;
+                  const full = stock>0 && q>=stock;
+                  const low  = stock>0 && stock-q<=5 && !full;
+                  return (
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10}}>
+                      <div>
+                        <div className="product-price">NT$ {(p.price||0).toLocaleString()}</div>
+                        <div style={{marginTop:5,display:'flex',gap:5,flexWrap:'wrap'}}>
+                          {low && <span className="tag tag-amber">⚡ 僅剩 {stock-q}</span>}
+                          {full && <span className="tag tag-red">額滿</span>}
                         </div>
-                      ))}
-                    </div>
-                    {o.note && <p style={{fontSize:"12px",color:"var(--text-muted)",marginBottom:"8px",padding:"6px 10px",background:"var(--surface-warm)",borderRadius:"var(--radius-sm)"}}>備註：{o.note}</p>}
-                    {confirmDel === o._id
-                      ? <div className="row">
-                          <span style={{fontSize:"12px",color:"var(--red)"}}>確定刪除？</span>
-                          <button onClick={() => deleteOrder(o._id)} className="btn-danger" style={{fontSize:"12px",padding:"4px 10px"}}>確定</button>
-                          <button onClick={() => setConfirmDel(null)} style={{fontSize:"12px",padding:"4px 10px"}}>取消</button>
-                        </div>
-                      : <button onClick={() => setConfirmDel(o._id)} style={{fontSize:"12px",color:"var(--text-faint)",padding:"3px 8px",border:"none",background:"transparent"}}>刪除</button>
-                    }
-                  </div>
-                ))}
-              </div>
-            )
-        }
-      </div>
-    );
-  }
-
-  // ── SETUP ──
-  if (view === "setup") return (
-    <div>
-      {Toast}
-      <button className="btn-back" onClick={() => setView("orders")} style={{marginBottom:"20px"}}>← 返回管理</button>
-      <p style={{fontSize:"11px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:"6px"}}>團購設定</p>
-      <h2 style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--text)",marginBottom:"20px"}}>設定本輪團購</h2>
-      <label className="lbl">團次名稱</label>
-      <input value={sRoundName} onChange={e => setSRoundName(e.target.value)} placeholder="例：第1團、2025年5月第2團" style={{marginBottom:"14px"}} />
-      <label className="lbl">團購名稱</label>
-      <input value={sTitle} onChange={e => setSTitle(e.target.value)} placeholder="例：本週海鮮團購" style={{marginBottom:"14px"}} />
-      <label className="lbl">說明文字（付款方式、取貨地點等）</label>
-      <textarea value={sDesc} onChange={e => setSDesc(e.target.value)} placeholder="說明..." rows={3} style={{marginBottom:"14px"}} />
-      <label className="lbl">取貨時間（顯示給客人）</label>
-      <input value={sDelivery} onChange={e => setSDelivery(e.target.value)} placeholder="例：5月3日（六）下午" style={{marginBottom:"14px"}} />
-      <label className="lbl">取貨說明（顯示於確認訂單頁，可每次開團調整）</label>
-      <textarea value={sPickupNote} onChange={e => setSPickupNote(e.target.value)} placeholder="例：請於取貨時間至新竹竹北門市自取，請記得告知姓名與品項編號。若無法準時取貨請事先告知。" rows={3} style={{marginBottom:"14px"}} />
-      <label className="lbl">下單截止時間</label>
-      <input type="datetime-local" value={sDeadline} onChange={e => setSDeadline(e.target.value)} style={{marginBottom:"14px"}} />
-      <label className="lbl">管理密碼</label>
-      <input type="text" value={sPass} onChange={e => setSPass(e.target.value)} placeholder="自訂管理密碼" style={{marginBottom:"14px"}} />
-      <label className="lbl">入場碼（留空代表不設限，設定後客人需輸入才能下單）</label>
-      <input type="text" value={sAccessCode} onChange={e => setSAccessCode(e.target.value)} placeholder="例：0503團購，每次開團換一組新的" style={{marginBottom:"20px"}} />
-
-      <div className="row" style={{justifyContent:"space-between",marginBottom:"10px"}}>
-        <p style={{fontWeight:600,fontSize:"15px"}}>商品列表</p>
-        <span style={{fontSize:"11px",color:"#aaa"}}>名稱 ／ 單價 ／ 總上限 ／ 每人限購（0＝無限）</span>
-      </div>
-      {sProds.map((p,i) => (
-        <div key={p.id} style={{marginBottom:"12px",background:"#f7f7f5",borderRadius:"10px",padding:"10px"}}>
-          <div className="row" style={{marginBottom:"6px"}}>
-            <input value={p.name} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,name:e.target.value} : x))} style={{flex:3,minWidth:0}} placeholder="品項名稱（如：酸種麵包）" />
-            <button onClick={() => setSProds(prev => prev.filter((_,j) => j!==i))} className="btn-danger" style={{padding:"8px 10px",flexShrink:0}}>✕</button>
-          </div>
-          {/* 沒有口味時才顯示單價/庫存設定 */}
-          {(!p.variants || p.variants.length === 0) && (
-            <div className="row" style={{marginBottom:"6px"}}>
-              <input type="number" value={p.price} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,price:parseFloat(e.target.value)||0} : x))} placeholder="單價" style={{flex:1}} />
-              <input type="number" value={p.stock||0} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,stock:parseInt(e.target.value)||0} : x))} placeholder="總上限(0=無限)" style={{flex:1}} />
-              <input type="number" value={p.perLimit||0} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,perLimit:parseInt(e.target.value)||0} : x))} placeholder="限購(0=無限)" style={{flex:1}} />
-            </div>
-          )}
-          {/* 口味列表 */}
-          {p.variants && p.variants.length > 0 && (
-            <div style={{marginBottom:"6px"}}>
-              <p style={{fontSize:"12px",color:"#888",marginBottom:"5px"}}>口味／規格（單價 ／ 上限 ／ 限購）</p>
-              {p.variants.map((v,vi) => (
-                <div key={v.id} className="row" style={{marginBottom:"5px"}}>
-                  <input value={v.name} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants: x.variants.map((vv,k) => k===vi ? {...vv, name:e.target.value} : vv)} : x))} placeholder="口味名稱" style={{flex:2,minWidth:0}} />
-                  <input type="number" value={v.price} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants: x.variants.map((vv,k) => k===vi ? {...vv, price:parseFloat(e.target.value)||0} : vv)} : x))} placeholder="單價" style={{width:"65px",flex:"none"}} />
-                  <input type="number" value={v.stock||0} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants: x.variants.map((vv,k) => k===vi ? {...vv, stock:parseInt(e.target.value)||0} : vv)} : x))} placeholder="上限" style={{width:"55px",flex:"none"}} />
-                  <input type="number" value={v.perLimit||0} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants: x.variants.map((vv,k) => k===vi ? {...vv, perLimit:parseInt(e.target.value)||0} : vv)} : x))} placeholder="限購" style={{width:"55px",flex:"none"}} />
-                  <button onClick={() => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants: x.variants.filter((_,k) => k!==vi)} : x))} className="btn-danger" style={{padding:"6px 9px",flexShrink:0}}>✕</button>
-                </div>
-              ))}
-              {/* 新增口味 */}
-              <div className="row" style={{marginTop:"6px"}}>
-                <input value={p._nv||""} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,_nv:e.target.value} : x))} placeholder="新口味名稱" style={{flex:2,minWidth:0}} />
-                <input type="number" value={p._nvp||""} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,_nvp:e.target.value} : x))} placeholder="單價" style={{width:"65px",flex:"none"}} />
-                <button onClick={() => {
-                  if(!(p._nv||"").trim()) return;
-                  setSProds(prev => prev.map((x,j) => j===i ? {...x, variants:[...x.variants,{id:genId(),name:x._nv.trim(),price:parseFloat(x._nvp)||0,stock:0,perLimit:0}], _nv:"", _nvp:""} : x));
-                }} style={{flexShrink:0,padding:"6px 12px",fontWeight:600}}>＋口味</button>
-              </div>
-            </div>
-          )}
-          {/* 新增第一個口味的按鈕（當尚無口味時） */}
-          {(!p.variants || p.variants.length === 0) && (
-            <button onClick={() => setSProds(prev => prev.map((x,j) => j===i ? {...x, variants:[{id:genId(),name:"",price:x.price,stock:x.stock,perLimit:x.perLimit}]} : x))}
-              style={{fontSize:"12px",color:"#5b21b6",borderColor:"#ede9fe",padding:"4px 10px",marginBottom:"6px",width:"100%"}}>
-              ＋ 新增口味／規格（設定後單價和庫存改由口味控制）
-            </button>
-          )}
-          <div className="row" style={{marginBottom:"6px"}}>
-            <span style={{fontSize:"12px",color:"#888",whiteSpace:"nowrap"}}>品項截單：</span>
-            <input type="datetime-local" value={p.deadline||""} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,deadline:e.target.value} : x))} style={{flex:1}} />
-            {p.deadline && <button onClick={() => setSProds(prev => prev.map((x,j) => j===i ? {...x,deadline:""} : x))} style={{fontSize:"12px",color:"#888",padding:"4px 8px",flexShrink:0}}>清除</button>}
-          </div>
-          <div className="row">
-            <span style={{fontSize:"12px",color:"#888",whiteSpace:"nowrap"}}>品項取貨時間：</span>
-            <input value={p.deliveryDate||""} onChange={e => setSProds(prev => prev.map((x,j) => j===i ? {...x,deliveryDate:e.target.value} : x))} placeholder="例：5月3日（六）下午" style={{flex:1}} />
-            {p.deliveryDate && <button onClick={() => setSProds(prev => prev.map((x,j) => j===i ? {...x,deliveryDate:""} : x))} style={{fontSize:"12px",color:"#888",padding:"4px 8px",flexShrink:0}}>清除</button>}
-          </div>
-        </div>
-      ))}
-      <div style={{background:"#f7f7f5",borderRadius:"10px",padding:"12px",marginBottom:"20px"}}>
-        <p style={{fontSize:"12px",color:"#888",marginBottom:"8px"}}>新增商品</p>
-        <div className="row">
-          <input value={newPN} onChange={e => setNewPN(e.target.value)} onKeyDown={e => e.key==="Enter"&&addProd()} placeholder="商品名稱" style={{flex:3,minWidth:0}} />
-          <input type="number" value={newPP} onChange={e => setNewPP(e.target.value)} placeholder="單價" style={{width:"65px",flex:"none"}} />
-          <input type="number" value={newPS} onChange={e => setNewPS(e.target.value)} placeholder="總上限" style={{width:"60px",flex:"none"}} />
-          <input type="number" value={newPL} onChange={e => setNewPL(e.target.value)} placeholder="限購" style={{width:"55px",flex:"none"}} />
-          <button onClick={addProd} style={{flexShrink:0,padding:"8px 14px",fontWeight:600}}>新增</button>
-        </div>
-      </div>
-      <button className="btn-primary" onClick={saveConfig} style={{width:"100%",padding:"13px",fontSize:"15px",borderRadius:"var(--radius)"}}>儲存設定</button>
-    </div>
-  );
-
-  // ── QUERY VIEW ──
-  if (view === "query") return (
-    <div style={{paddingBottom:"2rem"}}>
-      {Toast}
-      <button className="btn-back" onClick={()=>{setView("order");setQueryPhone("");setQueryResults(null);}} style={{marginBottom:"20px"}}>← 返回</button>
-      <p style={{fontSize:"11px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:"6px"}}>訂單查詢</p>
-      <h2 style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--text)",marginBottom:"10px"}}>查詢我的訂單</h2>
-      <p style={{fontSize:"14px",color:"var(--text-muted)",marginBottom:"20px",lineHeight:1.7}}>
-        輸入您下單時填寫的電話號碼，即可查看訂單紀錄。
-      </p>
-      <div className="row" style={{marginBottom:"20px"}}>
-        <input value={queryPhone} onChange={e=>setQueryPhone(e.target.value)}
-          onKeyDown={e=>{
-            if(e.key==="Enter"){
-              const q=queryPhone.trim();
-              if(!q){return;}
-              setQueryResults(orders.filter(o=>o.phone===q||o.name?.includes(q)));
-            }
-          }}
-          placeholder="輸入電話號碼" type="tel" style={{flex:1}} />
-        <button onClick={()=>{
-          const q=queryPhone.trim();
-          if(!q){return;}
-          setQueryResults(orders.filter(o=>o.phone===q||o.name?.includes(q)));
-        }} style={{flexShrink:0,padding:"8px 16px",fontWeight:600}}>查詢</button>
-      </div>
-
-      {queryResults === null ? null :
-        queryResults.length === 0 ? (
-          <div className="card" style={{textAlign:"center",padding:"2rem"}}>
-            <p style={{fontSize:"15px",color:"var(--text-muted)",marginBottom:"6px"}}>查無訂單紀錄</p>
-            <p style={{fontSize:"13px",color:"var(--text-faint)"}}>請確認電話號碼是否正確</p>
-          </div>
-        ) : (
-          <div>
-            <p style={{fontSize:"13px",color:"var(--text-muted)",marginBottom:"14px"}}>找到 <strong>{queryResults.length}</strong> 筆訂單紀錄</p>
-            {(() => {
-              const byRound = {};
-              queryResults.forEach(o => {
-                const key = o.roundName || "歷史訂單";
-                if (!byRound[key]) byRound[key] = [];
-                byRound[key].push(o);
-              });
-              return Object.entries(byRound).map(([rName, ros]) => (
-                <div key={rName} style={{marginBottom:"20px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
-                    <span style={{fontSize:"12px",fontWeight:700,color:"var(--accent)",background:"var(--accent-light)",padding:"3px 12px",borderRadius:"100px"}}>📦 {rName}</span>
-                    <span style={{fontSize:"12px",color:"var(--text-faint)"}}>共 {ros.length} 筆</span>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-                    {ros.map((o,i) => (
-                      <div key={o._id||i} className="card">
-                        <div className="row" style={{justifyContent:"space-between",marginBottom:"6px"}}>
-                          <span style={{fontWeight:600,fontSize:"15px",fontFamily:"var(--font-serif)"}}>{o.nickname||o.name}</span>
-                          <span style={{fontSize:"12px",color:"var(--text-faint)"}}>{new Date(o.ts).toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</span>
-                        </div>
-                        <div style={{display:"flex",flexDirection:"column",gap:"4px",marginBottom:"6px"}}>
-                          {(o.items||[]).map((item,j)=>(
-                            <div key={j} style={{padding:"7px 0",borderBottom:"1px solid var(--border-soft)"}}>
-                              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:item.deliveryDate?"3px":"0"}}>
-                                <span style={{fontSize:"14px",color:"var(--text)"}}>{item.name} <span style={{color:"var(--text-muted)"}}>×{item.qty}</span></span>
-                                {item.price>0&&<span style={{fontSize:"13px",fontWeight:600}}>NT${item.price*item.qty}</span>}
-                              </div>
-                              {item.deliveryDate&&<p style={{fontSize:"12px",color:"var(--green-text)",margin:0}}>📦 取貨時間：{item.deliveryDate}</p>}
-                            </div>
-                          ))}
-                        </div>
-                        {o.note&&<p style={{fontSize:"13px",color:"var(--text-muted)",marginBottom:"6px",padding:"6px 10px",background:"var(--surface-warm)",borderRadius:"var(--radius-sm)"}}>備註：{o.note}</p>}
-                        {o.total>0&&(
-                          <div style={{display:"flex",justifyContent:"space-between",fontWeight:700,paddingTop:"8px",borderTop:"1px solid var(--border-soft)",fontFamily:"var(--font-serif)"}}>
-                            <span style={{fontFamily:"var(--font-sans)",fontWeight:500,fontSize:"13px",color:"var(--text-muted)"}}>訂單小計</span>
-                            <span style={{color:"var(--green)"}}>NT${o.total.toLocaleString()}</span>
+                        {stock>0 && (
+                          <div className="progress-bar" style={{width:140,marginTop:8}}>
+                            <div className="progress-fill" style={{width:`${Math.min(100,q/stock*100)}%`}} />
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ));
-            })()}
-            <div className="info-box info-box-amber" style={{marginTop:"16px",fontSize:"13px",lineHeight:1.7}}>
-              如需修改或取消訂單，請直接在群組聯絡管理員。
-            </div>
-          </div>
-        )
-      }
-    </div>
-  );
-
-    // ── ACCESS GATE ──
-  if (!accessPassed && config.accessCode) return (
-    <div style={{maxWidth:"340px",margin:"0 auto",paddingTop:"4rem",textAlign:"center"}}>
-      {Toast}
-      <div style={{width:"64px",height:"64px",borderRadius:"50%",background:"var(--accent-light)",border:"2px solid var(--accent)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",fontSize:"28px"}}>🔒</div>
-      <h2 style={{fontSize:"22px",fontWeight:700,fontFamily:"var(--font-serif)",marginBottom:"8px",color:"var(--text)"}}>{config.title}</h2>
-      <p style={{fontSize:"14px",color:"var(--text-muted)",marginBottom:"28px",lineHeight:1.7}}>
-        此下單系統僅限群組成員使用<br/>請輸入群組公告的入場碼
-      </p>
-      <input value={accessInput} onChange={e=>{setAccessInput(e.target.value);setAccessErr("");}}
-        onKeyDown={e=>e.key==="Enter"&&(accessInput.trim()===config.accessCode?setAccessPassed(true):setAccessErr("入場碼錯誤，請確認群組公告"))}
-        placeholder="輸入入場碼" style={{marginBottom:"10px",textAlign:"center",fontSize:"18px",letterSpacing:"4px",fontWeight:600}} autoFocus />
-      {accessErr && <p style={{color:"var(--red)",fontSize:"13px",marginBottom:"12px"}}>{accessErr}</p>}
-      <button className="btn-primary" onClick={()=>{
-        if(accessInput.trim()===config.accessCode){setAccessPassed(true);setAccessErr("");}
-        else setAccessErr("入場碼錯誤，請確認群組公告");
-      }} style={{width:"100%",padding:"13px",marginTop:"4px"}}>進入下單</button>
-    </div>
-  );
-
-  // ── ORDER FORM ──
-  const passed = deadlinePassed();
-  return (
-    <div>
-      {Toast}
-
-      {/* Header */}
-      <div style={{marginBottom:"24px"}}>
-        <p style={{fontSize:"11px",fontWeight:600,color:"var(--accent)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:"6px"}}>團購下單</p>
-        <h1 style={{fontSize:"26px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--text)",lineHeight:1.2,marginBottom:"10px"}}>{config.title}</h1>
-        {config.description && (
-          <p style={{color:"var(--text-muted)",fontSize:"14px",whiteSpace:"pre-wrap",lineHeight:1.75,marginBottom:"12px"}}>{config.description}</p>
-        )}
-        <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
-          {config.deadline && (
-            <span className={"pill " + (passed ? "pill-deadline-passed" : "pill-deadline")}>
-              {passed ? "🚫 已截止下單" : `⏰ 截止：${fmtDeadline(config.deadline)}`}
-            </span>
-          )}
-          {config.deliveryDate && (
-            <span className="pill pill-delivery">📦 取貨：{config.deliveryDate}</span>
-          )}
-        </div>
-      </div>
-
-      {passed ? (
-        <div className="card" style={{textAlign:"center",padding:"3rem 2rem"}}>
-          <div style={{fontSize:"40px",marginBottom:"16px"}}>🚫</div>
-          <p style={{fontSize:"17px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--red)",marginBottom:"8px"}}>本輪下單已截止</p>
-          <p style={{fontSize:"14px",color:"var(--text-muted)",lineHeight:1.7}}>感謝您的關注<br/>請等待下一輪開放通知</p>
-        </div>
-      ) : (
-        <>
-          {/* Customer info */}
-          <div className="card" style={{marginBottom:"20px"}}>
-            <p style={{fontSize:"12px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"14px"}}>您的資訊</p>
-            <div className="field">
-              <label className="field-label">群組暱稱 *</label>
-              <input value={custNickname} onChange={e => { setCustNickname(e.target.value); setOrderErr(""); }} placeholder="請輸入您在群組內的暱稱" />
-            </div>
-            <div className="field" style={{marginBottom:0}}>
-              <label className="field-label">聯絡電話 *</label>
-              <input value={custPhone} onChange={e => { setCustPhone(e.target.value); setOrderErr(""); }} placeholder="取貨核對用" type="tel" />
-            </div>
-          </div>
-
-          {/* Products */}
-          <p style={{fontSize:"12px",fontWeight:600,color:"var(--text-faint)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"12px"}}>選擇品項</p>
-          {(!config.products || config.products.length === 0)
-            ? <div className="card" style={{color:"var(--text-faint)",fontSize:"14px",textAlign:"center",padding:"2rem",marginBottom:"16px"}}>尚未設定商品</div>
-            : <div className="card" style={{marginBottom:"16px",padding:"4px 16px"}}>
-                {config.products.map(p => {
-                  const pDeadlinePassed = prodDeadlinePassed(p);
-                  const hasVariants = p.variants && p.variants.length > 0;
-                  return (
-                    <div key={p.id} className="product-item">
-                      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom: hasVariants ? "10px" : "0",gap:"8px"}}>
-                        <div style={{flex:1}}>
-                          <div style={{display:"flex",flexWrap:"wrap",gap:"6px",alignItems:"center",marginBottom:"4px"}}>
-                            <span className="product-name">{p.name}</span>
-                            {pDeadlinePassed && <span className="pill pill-full" style={{fontSize:"11px",padding:"2px 8px"}}>已截止</span>}
-                            {!pDeadlinePassed && p.deadline && <span style={{fontSize:"11px",color:"var(--text-faint)"}}>截單：{fmtDeadline(p.deadline)}</span>}
-                            {p.deliveryDate && <span className="pill pill-delivery" style={{fontSize:"11px",padding:"2px 8px"}}>📦 {p.deliveryDate}</span>}
-                          </div>
-                        </div>
-                        {!hasVariants && (() => {
-                          const rem = getRemaining(p.id, p.stock);
-                          const full = rem === 0;
-                          const almost = p.stock > 0 && rem !== Infinity && rem <= 5 && !full;
-                          const disabled = full || pDeadlinePassed;
-                          return disabled
-                            ? <span style={{fontSize:"13px",color:"var(--text-faint)",flexShrink:0}}>{pDeadlinePassed?"已截止":"已售完"}</span>
-                            : <div style={{flexShrink:0,textAlign:"right"}}>
-                                {almost && <p style={{fontSize:"11px",fontWeight:700,color:"var(--red)",marginBottom:"3px"}}>⚡ 僅剩 {rem} 份！</p>}
-                                {!almost && p.stock > 0 && rem <= 10 && <p style={{fontSize:"11px",fontWeight:600,color:"var(--accent)",marginBottom:"3px"}}>剩 {rem} 份</p>}
-                                {p.perLimit > 0 && <p style={{fontSize:"11px",color:"var(--purple)",marginBottom:"3px"}}>限購 {p.perLimit}</p>}
-                                {p.price > 0 && <p style={{fontSize:"13px",color:"var(--text-muted)",marginBottom:"8px",fontWeight:500}}>NT${p.price}</p>}
-                                <div className="stepper">
-                                  <button className="stepper-btn" onClick={() => setQtyFor(p.id,(qtys[p.id]||0)-1,p.stock,p.perLimit)}>−</button>
-                                  <span className="stepper-val">{qtys[p.id]||0}</span>
-                                  <button className="stepper-btn" onClick={() => setQtyFor(p.id,(qtys[p.id]||0)+1,p.stock,p.perLimit)}>+</button>
-                                </div>
-                              </div>;
-                        })()}
+                      <div style={{display:'flex',alignItems:'center',gap:10}}>
+                        <button className="qty-btn" onClick={()=>changeQty(k,-1,stock,p.perLimit||0)} disabled={q===0||pClosed}>−</button>
+                        <span className="qty-val">{q}</span>
+                        <button className="qty-btn" onClick={()=>changeQty(k,1,stock,p.perLimit||0)} disabled={full||pClosed}>+</button>
                       </div>
-                      {hasVariants && !pDeadlinePassed && p.variants.map(v => {
-                        const rem = getRemaining(v.id, v.stock);
-                        const full = rem === 0;
-                        const almost = v.stock > 0 && rem !== Infinity && rem <= 5 && !full;
-                        return (
-                          <div key={v.id} className="variant-row" style={{opacity:full?0.45:1}}>
-                            <div style={{flex:1}}>
-                              <div style={{display:"flex",flexWrap:"wrap",gap:"5px",alignItems:"center",marginBottom:"2px"}}>
-                                <span style={{fontSize:"14px",fontWeight:500,color:"var(--text)"}}>{v.name}</span>
-                                {full && <span className="pill pill-full" style={{fontSize:"10px",padding:"1px 7px"}}>額滿</span>}
-                                {almost && <span className="pill pill-almost" style={{fontSize:"10px",padding:"1px 7px"}}>⚡ 剩 {rem}</span>}
-                                {!full && !almost && v.stock > 0 && rem <= 10 && <span style={{fontSize:"11px",color:"var(--accent)",fontWeight:600}}>剩 {rem} 份</span>}
-                                {!full && v.perLimit > 0 && <span className="pill pill-limit" style={{fontSize:"10px",padding:"1px 7px"}}>限 {v.perLimit}</span>}
-                              </div>
-                              {v.price > 0 && <p style={{margin:0,fontSize:"13px",color:"var(--text-muted)"}}>NT${v.price}</p>}
-                            </div>
-                            {full
-                              ? <span style={{fontSize:"13px",color:"var(--text-faint)"}}>已售完</span>
-                              : <div className="stepper">
-                                  <button className="stepper-btn" style={{width:"32px",height:"32px"}} onClick={() => setQtyFor(v.id,(qtys[v.id]||0)-1,v.stock,v.perLimit)}>−</button>
-                                  <span className="stepper-val" style={{fontSize:"16px"}}>{qtys[v.id]||0}</span>
-                                  <button className="stepper-btn" style={{width:"32px",height:"32px"}} onClick={() => setQtyFor(v.id,(qtys[v.id]||0)+1,v.stock,v.perLimit)}>+</button>
-                                </div>
-                            }
-                          </div>
-                        );
-                      })}
-                      {hasVariants && pDeadlinePassed && <p style={{fontSize:"13px",color:"var(--text-faint)",paddingLeft:"14px",paddingTop:"8px"}}>此品項已截止下單</p>}
                     </div>
                   );
-                })}
+                })()}
               </div>
-          }
+            );
+          })}
 
-          {/* Subtotal */}
-          {calcTotal() > 0 && (
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"var(--accent-light)",border:"1.5px solid #E8BCA0",borderRadius:"var(--radius-sm)",padding:"12px 16px",marginBottom:"16px"}}>
-              <span style={{fontSize:"13px",color:"var(--accent-text)",fontWeight:600}}>目前小計</span>
-              <span style={{fontSize:"20px",fontWeight:700,fontFamily:"var(--font-serif)",color:"var(--accent)"}}>NT${calcTotal().toLocaleString()}</span>
-            </div>
-          )}
-
-          {/* Note */}
-          <div className="field">
-            <label className="field-label">備註（過敏原、特殊需求）</label>
-            <textarea value={custNote} onChange={e => setCustNote(e.target.value)} placeholder="例：對堅果過敏" rows={2} />
+          <div className="card">
+            <div className="section-label">備註（可略）</div>
+            <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="有任何特殊需求請備註…" />
           </div>
 
-          {orderErr && <p style={{color:"var(--red)",fontSize:"13px",marginBottom:"12px",padding:"10px 14px",background:"var(--red-light)",borderRadius:"var(--radius-sm)"}}>{orderErr}</p>}
+          {err && <div className="alert alert-red">{err}</div>}
 
-          <button className="btn-primary" onClick={handleNext} style={{width:"100%",padding:"14px",fontSize:"15px",marginBottom:"28px",borderRadius:"var(--radius)"}}>
-            下一步：確認訂單 →
-          </button>
-        </>
-      )}
+          {hasItems && (
+            <div className="card sticky-foot" style={{boxShadow:'0 -2px 20px rgba(28,16,8,.12)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:13}}>
+                <span style={{fontWeight:600,fontSize:16}}>合計金額</span>
+                <span style={{fontFamily:'Noto Serif TC',fontSize:22,fontWeight:700,color:'var(--accent)'}}>{fmtMoney(total)}</span>
+              </div>
+              <button className="btn btn-primary" onClick={submit}>下一步 → 確認訂單</button>
+            </div>
+          )}
+          {!hasItems && (
+            <button className="btn btn-primary" style={{opacity:.55}} onClick={submit}>下一步 → 確認訂單</button>
+          )}
+        </>}
 
-      <div style={{textAlign:"center",paddingBottom:"8px",display:"flex",justifyContent:"center",gap:"20px"}}>
-        <button onClick={() => setView("query")} className="btn-ghost" style={{fontSize:"12px",color:"var(--text-muted)"}}>查詢我的訂單</button>
-        <button onClick={() => isAdmin ? setView("orders") : setView("admin-login")} className="btn-ghost" style={{fontSize:"12px",color:"var(--text-faint)"}}>管理員</button>
+        <div className="footer-links">
+          <span className="footer-link" onClick={()=>goto('query')}>查詢我的訂單</span>
+          <span className="footer-link" onClick={()=>goto('admin-login')}>管理員登入</span>
+        </div>
       </div>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+// ══════════════════════════════════════════════════════
+//  Confirm
+// ══════════════════════════════════════════════════════
+function ConfirmPage({ cfg, draft, onBack, onDone }) {
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+
+  const submit = async () => {
+    setLoading(true); setErr('');
+    try {
+      const order = {...draft, ts: Date.now(), pickedUp: false, pickedUpAt: null};
+      await submitOrder(order);
+      onDone(order);
+    } catch(e) { setErr('送出失敗，請再試一次'); setLoading(false); }
+  };
+
+  return (
+    <div>
+      <div className="header"><div className="header-brand">確認訂單</div></div>
+      <div className="container">
+        <div className="page-top">
+          <span className="back-btn" onClick={onBack}>← 返回修改</span>
+        </div>
+        {cfg?.pickupNote && (
+          <div className="alert alert-amber" style={{whiteSpace:'pre-line'}}>📍 {cfg.pickupNote}</div>
+        )}
+        <div className="card">
+          <div className="section-label">訂購人</div>
+          <div style={{fontWeight:600,fontSize:16}}>{draft.nickname}</div>
+          <div style={{color:'var(--text-muted)',fontSize:14,marginTop:2}}>{draft.phone}</div>
+        </div>
+        <div className="card">
+          <div className="section-label">訂單明細</div>
+          {draft.items.map((item,i) => (
+            <div key={i} className="order-row">
+              <div style={{flex:1}}>
+                <div style={{fontWeight:500}}>{item.name}{item.variant?` - ${item.variant}`:''}</div>
+                <div style={{fontSize:13,color:'var(--text-muted)'}}>NT$ {item.price.toLocaleString()} × {item.qty}</div>
+              </div>
+              <div style={{fontWeight:600}}>{fmtMoney(item.subtotal)}</div>
+            </div>
+          ))}
+          {draft.note && (
+            <div style={{marginTop:10,padding:'9px 12px',background:'var(--bg)',borderRadius:7,fontSize:13,color:'var(--text-muted)'}}>備註：{draft.note}</div>
+          )}
+          <div className="order-total">
+            <span>合計</span>
+            <span style={{color:'var(--accent)'}}>{fmtMoney(draft.total)}</span>
+          </div>
+        </div>
+        {err && <div className="alert alert-red">{err}</div>}
+        <button className="btn btn-primary" onClick={submit} disabled={loading}>
+          {loading ? '送出中…' : '✓ 確認送出'}
+        </button>
+        <div style={{textAlign:'center',marginTop:11,fontSize:13,color:'var(--text-muted)'}}>送出後請截圖保存訂單資訊</div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Done
+// ══════════════════════════════════════════════════════
+function DonePage({ order, onBack }) {
+  const last4 = (order?.phone||'').slice(-4);
+  return (
+    <div>
+      <div className="header"><div className="header-brand">下單成功！</div></div>
+      <div className="container fade-up">
+        <div style={{textAlign:'center',padding:'36px 0 22px'}}>
+          <div className="done-circle">✓</div>
+          <h2 style={{fontFamily:'Noto Serif TC',fontSize:22,marginBottom:6}}>訂單已送出</h2>
+          <p style={{color:'var(--text-muted)',fontSize:14}}>感謝您的訂購！</p>
+        </div>
+        <div className="card" style={{textAlign:'center',padding:'24px 20px'}}>
+          <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:8}}>取貨憑證</div>
+          <div style={{fontFamily:'Noto Serif TC',fontSize:30,fontWeight:700,color:'var(--accent)',marginBottom:3}}>{order.nickname}</div>
+          <div style={{fontSize:22,fontWeight:600,letterSpacing:'.12em'}}>···· {last4}</div>
+          <div style={{marginTop:11,fontSize:13,color:'var(--text-muted)'}}>取貨時請告知暱稱與電話後四碼</div>
+        </div>
+        <div className="card">
+          <div className="section-label">訂單摘要</div>
+          {order.items.map((item,i)=>(
+            <div key={i} className="order-row">
+              <span>{item.name}{item.variant?` - ${item.variant}`:''} ×{item.qty}</span>
+              <span style={{fontWeight:600}}>{fmtMoney(item.subtotal)}</span>
+            </div>
+          ))}
+          <div className="order-total">
+            <span>合計</span>
+            <span style={{color:'var(--accent)'}}>{fmtMoney(order.total)}</span>
+          </div>
+        </div>
+        <button className="btn btn-outline btn-full" onClick={onBack}>← 返回首頁</button>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Query
+// ══════════════════════════════════════════════════════
+function QueryPage({ onBack }) {
+  const [phone, setPhone]   = useState('');
+  const [orders, setOrders] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const search = async () => {
+    if (!phone.trim()) return;
+    setLoading(true);
+    try {
+      const snap = await db.collection('orders').where('phone','==',phone.trim()).orderBy('ts','desc').get();
+      setOrders(snap.docs.map(d=>({id:d.id,...d.data()})));
+    } catch(e) { setOrders([]); }
+    setLoading(false);
+  };
+
+  const grouped = {};
+  (orders||[]).forEach(o => {
+    const k = o.roundName||'舊訂單';
+    if (!grouped[k]) grouped[k]=[];
+    grouped[k].push(o);
+  });
+
+  return (
+    <div>
+      <div className="header"><div className="header-brand">訂單查詢</div></div>
+      <div className="container">
+        <div className="page-top"><span className="back-btn" onClick={onBack}>← 返回</span></div>
+        <div className="card">
+          <div className="section-label">輸入電話查詢歷史訂單</div>
+          <div className="input-row">
+            <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="09XX-XXX-XXX" onKeyDown={e=>e.key==='Enter'&&search()} />
+            <button className="btn btn-primary" style={{width:'auto',padding:'10px 20px'}} onClick={search} disabled={loading}>查詢</button>
+          </div>
+        </div>
+        {loading && <div className="loading">查詢中…</div>}
+        {orders!==null && !loading && (
+          orders.length===0
+            ? <div className="empty-state"><div style={{fontSize:36,marginBottom:12}}>🔍</div>找不到此電話的訂單記錄</div>
+            : Object.keys(grouped).map(round=>(
+              <div key={round}>
+                <div style={{fontFamily:'Noto Serif TC',fontSize:14,fontWeight:600,color:'var(--text-muted)',margin:'14px 0 8px'}}>{round}</div>
+                {grouped[round].map(o=>(
+                  <div key={o.id} className="card" style={{marginBottom:9}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+                      <span style={{fontWeight:600}}>{o.nickname}</span>
+                      <span style={{fontSize:12,color:'var(--text-muted)'}}>{fmtTs(o.ts)}</span>
+                    </div>
+                    {o.items.map((item,i)=>(
+                      <div key={i} className="order-row" style={{fontSize:14}}>
+                        <span>{item.name}{item.variant?` - ${item.variant}`:''} ×{item.qty}</span>
+                        <span>{fmtMoney(item.subtotal)}</span>
+                      </div>
+                    ))}
+                    <div style={{display:'flex',justifyContent:'space-between',paddingTop:10,fontWeight:700}}>
+                      <span>合計</span>
+                      <span style={{color:'var(--accent)'}}>{fmtMoney(o.total)}</span>
+                    </div>
+                    {o.pickedUp && <div style={{marginTop:8}}><span className="tag tag-green">✓ 已取貨</span></div>}
+                  </div>
+                ))}
+              </div>
+            ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Admin Login
+// ══════════════════════════════════════════════════════
+function AdminLogin({ cfg, onOk, onBack }) {
+  const [pass, setPass] = useState('');
+  const [err, setErr]   = useState('');
+  const login = () => {
+    if (!cfg || !cfg.adminPass) return onOk();
+    pass === cfg.adminPass ? onOk() : setErr('密碼錯誤');
+  };
+  return (
+    <div className="center-page">
+      <div className="center-logo">後台管理</div>
+      <div className="center-sub">半吊子廚房 · The Half Kitchen</div>
+      <div className="center-card fade-up">
+        <h2 style={{fontFamily:'Noto Serif TC',fontSize:18,marginBottom:16}}>管理員登入</h2>
+        <div className="field">
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="管理員密碼" onKeyDown={e=>e.key==='Enter'&&login()} autoFocus />
+        </div>
+        {err && <div className="alert alert-red" style={{marginBottom:12}}>{err}</div>}
+        <button className="btn btn-primary" style={{marginBottom:9}} onClick={login}>登入</button>
+        <button className="btn btn-ghost btn-full" onClick={onBack}>返回首頁</button>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Admin Orders
+// ══════════════════════════════════════════════════════
+function AdminOrders({ cfg, refreshCfg, goto }) {
+  const [orders, setOrders]     = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [view, setView]         = useState('current');
+  const [editOrder, setEditOrder] = useState(null);
+  const [newRound, setNewRound] = useState('');
+  const [showNewRound, setShowNewRound] = useState(false);
+
+  useEffect(()=>{ loadOrders(); }, [view]);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    try { setOrders(await getOrders(view==='current'?cfg?.roundId:null)); }
+    catch(e) {}
+    setLoading(false);
+  };
+
+  const totalAmt   = orders.reduce((a,o)=>a+o.total,0);
+  const uniquePpl  = new Set(orders.map(o=>o.phone)).size;
+
+  const prodStats = {};
+  const prodStocks = {};
+  (cfg?.products||[]).forEach(p=>{
+    if (p.variants&&p.variants.length) {
+      p.variants.forEach(v=>{ const k=`${p.name} - ${v.name}`; prodStats[k]=0; prodStocks[k]=v.stock||p.stock||0; });
+    } else { prodStats[p.name]=0; prodStocks[p.name]=p.stock||0; }
+  });
+  orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      const k=item.variant?`${item.name} - ${item.variant}`:item.name;
+      prodStats[k]=(prodStats[k]||0)+item.qty;
+    });
+  });
+
+  const startNewRound = async () => {
+    if (!newRound.trim()) return;
+    await saveConfig({...cfg, roundId:genId(), roundName:newRound.trim(), deadline:'', deliveryDate:'', pickupNote:''});
+    await refreshCfg();
+    setShowNewRound(false); setNewRound('');
+    goto('setup');
+  };
+
+  const exportCSV = type => {
+    if (type==='pickup') {
+      const pkeys = Object.keys(prodStats);
+      const hdr = ['暱稱','電話',...pkeys,'合計','備註'];
+      const rows = orders.map(o=>{
+        const row=[o.nickname,o.phone];
+        pkeys.forEach(p=>{ const item=(o.items||[]).find(i=>(i.variant?`${i.name} - ${i.variant}`:i.name)===p); row.push(item?item.qty:0); });
+        return [...row,o.total,o.note||''];
+      });
+      downloadCSV([hdr,...rows], `取貨核對表_${cfg?.roundName||''}.csv`);
+    } else {
+      const rows=[['品項','數量','單價','小計']];
+      Object.keys(prodStats).forEach(k=>{
+        let price=0;
+        for (const o of orders){const item=(o.items||[]).find(i=>(i.variant?`${i.name} - ${i.variant}`:i.name)===k);if(item){price=item.price;break;}}
+        rows.push([k,prodStats[k],price,prodStats[k]*price]);
+      });
+      rows.push(['合計','','',totalAmt]);
+      downloadCSV(rows, `叫貨統計_${cfg?.roundName||''}.csv`);
+    }
+  };
+
+  return (
+    <div>
+      <div className="header">
+        <div className="header-brand">後台管理</div>
+        <div className="header-sub">{cfg?.roundName||''} · {cfg?.title||''}</div>
+      </div>
+      <div className="container">
+        <div style={{paddingTop:14}}>
+          <div className="scroll-tabs">
+            <div className="scroll-tab active">📋 訂單</div>
+            <div className="scroll-tab" onClick={()=>goto('pickup')}>📦 取貨</div>
+            <div className="scroll-tab" onClick={()=>goto('setup')}>⚙️ 設定</div>
+            <div className="scroll-tab" onClick={()=>setShowNewRound(true)}>🔄 開新團</div>
+          </div>
+
+          <div className="stat-grid">
+            <div className="stat-card"><div className="stat-val">{orders.length}</div><div className="stat-lbl">訂單數</div></div>
+            <div className="stat-card"><div className="stat-val">{uniquePpl}</div><div className="stat-lbl">下單人數</div></div>
+            <div className="stat-card"><div className="stat-val" style={{fontSize:16}}>{fmtMoney(totalAmt)}</div><div className="stat-lbl">總金額</div></div>
+          </div>
+
+          {Object.keys(prodStats).length>0 && (
+            <div className="card" style={{marginBottom:14}}>
+              <div className="section-label">品項統計</div>
+              <div className="tags-row">
+                {Object.keys(prodStats).map(k=><span key={k} className="tag tag-accent">{k} × {prodStats[k]}</span>)}
+              </div>
+              {Object.keys(prodStats).map(k=>{
+                const stock=prodStocks[k]||0;
+                if (!stock) return null;
+                const pct=Math.min(100, prodStats[k]/stock*100);
+                return (
+                  <div key={k} style={{marginBottom:9}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginBottom:4}}>
+                      <span>{k}</span>
+                      <span style={{color:'var(--text-muted)'}}>{prodStats[k]} / {stock}</span>
+                    </div>
+                    <div className="progress-bar"><div className="progress-fill" style={{width:`${pct}%`}}/></div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="pill-tabs">
+            <div className={`pill-tab ${view==='current'?'active':''}`} onClick={()=>setView('current')}>本團</div>
+            <div className={`pill-tab ${view==='all'?'active':''}`} onClick={()=>setView('all')}>所有團次</div>
+          </div>
+
+          <div style={{display:'flex',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+            <button className="copy-btn" onClick={()=>exportCSV('pickup')}>⬇ 取貨核對表</button>
+            <button className="copy-btn" onClick={()=>exportCSV('order')}>⬇ 叫貨統計</button>
+          </div>
+
+          {loading ? <div className="loading">載入中…</div>
+           : orders.length===0
+             ? <div className="empty-state"><div style={{fontSize:36,marginBottom:12}}>📋</div>目前沒有訂單</div>
+             : orders.map(o=>(
+               <div key={o.id} className="order-item">
+                 <div className="order-hdr">
+                   <div>
+                     <span className="order-person">{o.nickname}</span>
+                     <span style={{fontWeight:400,fontSize:13,color:'var(--text-muted)',marginLeft:5}}>({o.phone})</span>
+                     {view==='all' && <div style={{marginTop:3}}><span className="tag tag-gray">{o.roundName}</span></div>}
+                   </div>
+                   <span className="order-time">{fmtTs(o.ts)}</span>
+                 </div>
+                 <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:6}}>
+                   {(o.items||[]).map((item,i)=><span key={i}>{item.name}{item.variant?` - ${item.variant}`:''} ×{item.qty}　</span>)}
+                 </div>
+                 {o.note && <div style={{fontSize:12,color:'var(--amber)',marginBottom:7}}>備註：{o.note}</div>}
+                 <div className="order-foot">
+                   <div>{o.pickedUp && <span className="tag tag-green">✓ 已取貨</span>}</div>
+                   <div style={{display:'flex',alignItems:'center',gap:8}}>
+                     <span className="order-sum">{fmtMoney(o.total)}</span>
+                     <button className="btn btn-ghost btn-sm" onClick={()=>setEditOrder(o)}>編輯</button>
+                   </div>
+                 </div>
+               </div>
+             ))
+          }
+        </div>
+      </div>
+
+      {editOrder && <EditModal order={editOrder} onClose={()=>setEditOrder(null)} onSaved={()=>{ setEditOrder(null); loadOrders(); }} />}
+
+      {showNewRound && (
+        <div className="modal-bg" onClick={()=>setShowNewRound(false)}>
+          <div className="modal" onClick={e=>e.stopPropagation()}>
+            <div className="modal-title">開啟新一團</div>
+            <div className="alert alert-amber" style={{marginBottom:14}}>舊訂單將完整保留，系統將產生新的團次 ID 並跳至設定頁。</div>
+            <div className="field">
+              <label>新團次名稱</label>
+              <input type="text" value={newRound} onChange={e=>setNewRound(e.target.value)} placeholder="例：第 2 團" autoFocus />
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setShowNewRound(false)}>取消</button>
+              <button className="btn btn-primary" style={{flex:1}} onClick={startNewRound}>確認開新團</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Edit Order Modal ──────────────────────────────────
+function EditModal({ order, onClose, onSaved }) {
+  const [nickname, setNickname] = useState(order.nickname);
+  const [phone, setPhone]       = useState(order.phone);
+  const [items, setItems]       = useState(order.items.map(i=>({...i})));
+  const [note, setNote]         = useState(order.note||'');
+  const [loading, setLoading]   = useState(false);
+
+  const total = items.reduce((a,i)=>a+i.qty*i.price,0);
+
+  const setItemQty = (i, delta) => {
+    setItems(prev=>{
+      const next=[...prev];
+      next[i]={...next[i], qty:Math.max(0,next[i].qty+delta)};
+      next[i].subtotal=next[i].qty*next[i].price;
+      return next.filter(x=>x.qty>0);
+    });
+  };
+
+  const save = async () => {
+    setLoading(true);
+    try {
+      await updateOrder(order.id, {nickname,phone,name:`${nickname}（${phone}）`,items,note,total});
+      onSaved();
+    } catch(e){ setLoading(false); }
+  };
+
+  const del = async () => {
+    if (!window.confirm('確定要刪除此訂單？')) return;
+    setLoading(true);
+    await deleteOrder(order.id);
+    onSaved();
+  };
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">編輯訂單</div>
+        <div className="form-row" style={{marginBottom:12}}>
+          <div className="field" style={{marginBottom:0}}>
+            <label>暱稱</label>
+            <input type="text" value={nickname} onChange={e=>setNickname(e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom:0}}>
+            <label>電話</label>
+            <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} />
+          </div>
+        </div>
+        <div className="section-label">品項數量（設為 0 = 移除）</div>
+        {items.map((item,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:500}}>{item.name}{item.variant?` - ${item.variant}`:''}</div>
+              <div style={{fontSize:13,color:'var(--text-muted)'}}>NT$ {item.price.toLocaleString()}</div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <button className="qty-btn" onClick={()=>setItemQty(i,-1)}>−</button>
+              <span className="qty-val">{item.qty}</span>
+              <button className="qty-btn" onClick={()=>setItemQty(i,1)}>+</button>
+            </div>
+          </div>
+        ))}
+        <div className="field">
+          <label>備註</label>
+          <textarea value={note} onChange={e=>setNote(e.target.value)} style={{minHeight:56}} />
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:14,fontWeight:700}}>
+          <span>合計</span>
+          <span style={{color:'var(--accent)'}}>{fmtMoney(total)}</span>
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-danger btn-sm" onClick={del} disabled={loading}>刪除訂單</button>
+          <button className="btn btn-ghost" style={{flex:1}} onClick={onClose}>取消</button>
+          <button className="btn btn-primary" style={{flex:1}} onClick={save} disabled={loading}>儲存</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Pickup
+// ══════════════════════════════════════════════════════
+function PickupPage({ cfg, onBack }) {
+  const [orders, setOrders]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [tab, setTab]             = useState('search');
+  const [searchPh, setSearchPh]   = useState('');
+  const [results, setResults]     = useState(null);
+  const [marking, setMarking]     = useState('');
+  const [copied, setCopied]       = useState('');
+
+  useEffect(()=>{ loadOrders(); }, []);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    try { setOrders(await getOrders(cfg?.roundId)); }
+    catch(e) {}
+    setLoading(false);
+  };
+
+  const search = () => {
+    const q = searchPh.trim().replace(/[-\s]/g,'');
+    setResults(orders.filter(o=>o.phone.replace(/[-\s]/g,'')===q));
+  };
+
+  const markPickup = async (id, picked) => {
+    setMarking(id);
+    await updateOrder(id, {pickedUp:picked, pickedUpAt:picked?Date.now():null});
+    await loadOrders();
+    if (results) setResults(prev=>prev.map(o=>o.id===id?{...o,pickedUp:picked}:o));
+    setMarking('');
+  };
+
+  const pending  = orders.filter(o=>!o.pickedUp);
+  const pickedUp = orders.filter(o=>o.pickedUp);
+
+  const copyMsg = (type) => {
+    let text;
+    if (type==='pending') {
+      text = `📦 尚未取貨名單（${pending.length} 人）\n`
+           + pending.map(o=>`• ${o.nickname}（${o.phone}）— ${fmtMoney(o.total)}`).join('\n')
+           + '\n\n請儘快前來取貨，謝謝！';
+    } else {
+      text = pending.map(o=>`${o.nickname}（${o.phone}）`).join('\n');
+    }
+    copyText(text, ()=>{ setCopied(type); setTimeout(()=>setCopied(''),2000); });
+  };
+
+  const OrderCard = ({o}) => (
+    <div className="pickup-result">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+        <div>
+          <div style={{fontWeight:600,fontSize:15}}>{o.nickname} <span style={{fontWeight:400,fontSize:13,color:'var(--text-muted)'}}>({o.phone})</span></div>
+          {o.pickedUpAt && <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>取貨：{fmtTs(o.pickedUpAt)}</div>}
+        </div>
+        <div style={{fontFamily:'Noto Serif TC',fontSize:18,fontWeight:700,color:'var(--accent)'}}>{fmtMoney(o.total)}</div>
+      </div>
+      <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:10}}>
+        {(o.items||[]).map((item,i)=>`${item.name}${item.variant?` - ${item.variant}`:''} ×${item.qty}`).join('　')}
+      </div>
+      {o.note && <div style={{fontSize:12,color:'var(--amber)',marginBottom:8}}>備註：{o.note}</div>}
+      {o.pickedUp
+        ? <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <span className="tag tag-green">✓ 已取貨</span>
+            <button className="btn btn-ghost btn-sm" onClick={()=>markPickup(o.id,false)} disabled={marking===o.id}>撤銷</button>
+          </div>
+        : <button className="btn btn-green btn-full" onClick={()=>markPickup(o.id,true)} disabled={marking===o.id}>
+            {marking===o.id?'處理中…':'✓ 標記已取貨'}
+          </button>
+      }
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="header">
+        <div className="header-brand">取貨管理</div>
+        <div className="header-sub">{cfg?.roundName||''}</div>
+      </div>
+      <div className="container">
+        <div style={{paddingTop:14}}>
+          <span className="back-btn" onClick={onBack}>← 返回訂單</span>
+          <div className="pickup-stat-bar">
+            <div className="pickup-stat">本團 <b>{orders.length}</b></div>
+            <div className="pickup-stat">已取 <b style={{color:'var(--green)'}}>{pickedUp.length}</b></div>
+            <div className="pickup-stat">未取 <b style={{color:'var(--red)'}}>{pending.length}</b></div>
+          </div>
+          <div className="pill-tabs">
+            <div className={`pill-tab ${tab==='search'?'active':''}`} onClick={()=>setTab('search')}>🔍 搜尋</div>
+            <div className={`pill-tab ${tab==='pending'?'active':''}`} onClick={()=>setTab('pending')}>未取 ({pending.length})</div>
+            <div className={`pill-tab ${tab==='done'?'active':''}`} onClick={()=>setTab('done')}>已取 ({pickedUp.length})</div>
+          </div>
+
+          {loading ? <div className="loading">載入中…</div> : <>
+            {tab==='search' && <>
+              <div className="input-row" style={{marginBottom:16}}>
+                <input type="tel" value={searchPh} onChange={e=>setSearchPh(e.target.value)} placeholder="輸入電話搜尋" onKeyDown={e=>e.key==='Enter'&&search()} />
+                <button className="btn btn-primary" style={{width:'auto',padding:'10px 20px'}} onClick={search}>搜尋</button>
+              </div>
+              {results && (
+                results.length===0
+                  ? <div className="empty-state">找不到此電話的訂單</div>
+                  : results.map(o=><OrderCard key={o.id} o={o} />)
+              )}
+            </>}
+
+            {tab==='pending' && <>
+              <div style={{display:'flex',gap:8,marginBottom:13,flexWrap:'wrap'}}>
+                <button className="copy-btn" onClick={()=>copyMsg('pending')}>{copied==='pending'?'✓ 已複製':'📋 複製催取訊息'}</button>
+                <button className="copy-btn" onClick={()=>copyMsg('list')}>{copied==='list'?'✓ 已複製':'📋 複製未取名單'}</button>
+              </div>
+              {pending.length===0
+                ? <div className="empty-state"><div style={{fontSize:36,marginBottom:12}}>🎉</div>所有訂單均已取貨！</div>
+                : pending.map(o=><OrderCard key={o.id} o={o} />)
+              }
+            </>}
+
+            {tab==='done' && (
+              pickedUp.length===0
+                ? <div className="empty-state">尚無取貨紀錄</div>
+                : pickedUp.map(o=><OrderCard key={o.id} o={o} />)
+            )}
+          </>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
+//  Setup
+// ══════════════════════════════════════════════════════
+function SetupPage({ cfg, onSaved, onBack }) {
+  const init = {
+    title:'', description:'', deliveryDate:'', deadline:'',
+    pickupNote:'', adminPass:'', accessCode:'', roundName:'',
+    products: []
+  };
+  const [form, setForm] = useState({...init, ...(cfg||{}), products: cfg?.products ? JSON.parse(JSON.stringify(cfg.products)) : []});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved]   = useState(false);
+
+  const set = (k,v) => setForm(p=>({...p,[k]:v}));
+
+  const addProd = () => set('products',[...form.products,{name:'',price:0,stock:0,perLimit:0,description:'',variants:[]}]);
+  const rmProd  = i  => set('products',form.products.filter((_,idx)=>idx!==i));
+  const setProd = (i,k,v) => { const ps=[...form.products]; ps[i]={...ps[i],[k]:v}; set('products',ps); };
+
+  const addVar  = pi => { const ps=[...form.products]; ps[pi].variants=[...(ps[pi].variants||[]),{name:'',price:0,stock:0}]; set('products',ps); };
+  const rmVar   = (pi,vi) => { const ps=[...form.products]; ps[pi].variants=ps[pi].variants.filter((_,i)=>i!==vi); set('products',ps); };
+  const setVar  = (pi,vi,k,v) => { const ps=[...form.products]; ps[pi].variants[vi]={...ps[pi].variants[vi],[k]:v}; set('products',ps); };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await saveConfig({
+        ...(cfg||{}), ...form,
+        roundId: cfg?.roundId || genId(),
+        products: form.products.map(p=>({
+          ...p, price:Number(p.price)||0, stock:Number(p.stock)||0, perLimit:Number(p.perLimit)||0,
+          variants:(p.variants||[]).map(v=>({...v,price:Number(v.price)||0,stock:Number(v.stock)||0}))
+        }))
+      });
+      setSaved(true);
+      setTimeout(()=>setSaved(false),2500);
+      onSaved();
+    } catch(e) {}
+    setSaving(false);
+  };
+
+  return (
+    <div>
+      <div className="header"><div className="header-brand">團購設定</div></div>
+      <div className="container">
+        <div style={{paddingTop:14}}>
+          {onBack && <span className="back-btn" onClick={onBack}>← 返回訂單</span>}
+
+          <div className="card">
+            <div className="section-label">基本資訊</div>
+            <div className="field">
+              <label>團次名稱</label>
+              <input type="text" value={form.roundName} onChange={e=>set('roundName',e.target.value)} placeholder="例：第 1 團" />
+            </div>
+            <div className="field">
+              <label>團購名稱（顯示於頁面）</label>
+              <input type="text" value={form.title} onChange={e=>set('title',e.target.value)} placeholder="例：雪球餅乾團購" />
+            </div>
+            <div className="field">
+              <label>團購說明</label>
+              <textarea value={form.description} onChange={e=>set('description',e.target.value)} placeholder="說明文字，支援換行…" />
+            </div>
+            <div className="form-row">
+              <div className="field" style={{marginBottom:0}}>
+                <label>截止時間</label>
+                <input type="datetime-local" value={form.deadline} onChange={e=>set('deadline',e.target.value)} />
+              </div>
+              <div className="field" style={{marginBottom:0}}>
+                <label>取貨時間（顯示文字）</label>
+                <input type="text" value={form.deliveryDate} onChange={e=>set('deliveryDate',e.target.value)} placeholder="例：6月15日 14:00-18:00" />
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="section-label">取貨說明</div>
+            <textarea value={form.pickupNote} onChange={e=>set('pickupNote',e.target.value)} placeholder="取貨地點、注意事項…（顯示於確認頁）" />
+          </div>
+
+          <div className="card">
+            <div className="section-label">安全設定</div>
+            <div className="form-row">
+              <div className="field" style={{marginBottom:0}}>
+                <label>管理員密碼 <span className="req">*</span></label>
+                <input type="text" value={form.adminPass} onChange={e=>set('adminPass',e.target.value)} placeholder="設定密碼" />
+              </div>
+              <div className="field" style={{marginBottom:0}}>
+                <label>消費者入場碼（空白=不需要）</label>
+                <input type="text" value={form.accessCode} onChange={e=>set('accessCode',e.target.value)} placeholder="可留空" />
+              </div>
+            </div>
+          </div>
+
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div className="section-label" style={{marginBottom:0}}>品項管理</div>
+            <button className="btn btn-outline btn-sm" onClick={addProd}>+ 新增品項</button>
+          </div>
+
+          {form.products.map((p,pi)=>(
+            <div key={pi} className="prod-editor">
+              <div className="prod-editor-hdr">
+                <span style={{fontWeight:600}}>品項 {pi+1}</span>
+                <button className="btn btn-danger btn-sm" onClick={()=>rmProd(pi)}>刪除</button>
+              </div>
+              <div className="form-row">
+                <div className="field" style={{marginBottom:8}}>
+                  <label>品項名稱</label>
+                  <input type="text" value={p.name} onChange={e=>setProd(pi,'name',e.target.value)} placeholder="品項名稱" />
+                </div>
+                <div className="field" style={{marginBottom:8}}>
+                  <label>簡短說明（可略）</label>
+                  <input type="text" value={p.description||''} onChange={e=>setProd(pi,'description',e.target.value)} placeholder="說明" />
+                </div>
+              </div>
+              {(!p.variants||!p.variants.length) && (
+                <div className="form-row">
+                  <div className="field" style={{marginBottom:8}}>
+                    <label>售價（NT$）</label>
+                    <input type="number" value={p.price} onChange={e=>setProd(pi,'price',e.target.value)} min="0" />
+                  </div>
+                  <div className="field" style={{marginBottom:8}}>
+                    <label>庫存上限（0=無限）</label>
+                    <input type="number" value={p.stock} onChange={e=>setProd(pi,'stock',e.target.value)} min="0" />
+                  </div>
+                </div>
+              )}
+              <div className="form-row">
+                <div className="field" style={{marginBottom:8}}>
+                  <label>每人限購（0=不限）</label>
+                  <input type="number" value={p.perLimit} onChange={e=>setProd(pi,'perLimit',e.target.value)} min="0" />
+                </div>
+                <div className="field" style={{marginBottom:8}}>
+                  <label>獨立截止時間（可略）</label>
+                  <input type="datetime-local" value={p.deadline||''} onChange={e=>setProd(pi,'deadline',e.target.value)} />
+                </div>
+              </div>
+              <div className="field">
+                <label>獨立取貨時間（可略）</label>
+                <input type="text" value={p.deliveryDate||''} onChange={e=>setProd(pi,'deliveryDate',e.target.value)} placeholder="例：6月16日上午" />
+              </div>
+
+              {(p.variants||[]).length>0 && <>
+                <div className="section-label" style={{marginBottom:7,marginTop:4}}>規格列表</div>
+                {p.variants.map((v,vi)=>(
+                  <div key={vi} style={{display:'flex',gap:7,marginBottom:8,alignItems:'flex-end'}}>
+                    <div className="field" style={{marginBottom:0,flex:2}}>
+                      {vi===0 && <label style={{fontSize:12}}>規格名稱</label>}
+                      <input type="text" value={v.name} onChange={e=>setVar(pi,vi,'name',e.target.value)} placeholder="例：原味" />
+                    </div>
+                    <div className="field" style={{marginBottom:0,flex:1}}>
+                      {vi===0 && <label style={{fontSize:12}}>售價</label>}
+                      <input type="number" value={v.price} onChange={e=>setVar(pi,vi,'price',e.target.value)} min="0" />
+                    </div>
+                    <div className="field" style={{marginBottom:0,flex:1}}>
+                      {vi===0 && <label style={{fontSize:12}}>庫存</label>}
+                      <input type="number" value={v.stock} onChange={e=>setVar(pi,vi,'stock',e.target.value)} min="0" />
+                    </div>
+                    <button className="btn btn-danger btn-sm" style={{flexShrink:0}} onClick={()=>rmVar(pi,vi)}>✕</button>
+                  </div>
+                ))}
+              </>}
+              <button className="btn btn-ghost btn-sm" style={{marginTop:4}} onClick={()=>addVar(pi)}>+ 新增規格</button>
+            </div>
+          ))}
+
+          {saved && <div className="alert alert-green">✓ 設定已儲存</div>}
+          <button className="btn btn-primary" onClick={save} disabled={saving} style={{marginTop:6}}>
+            {saving?'儲存中…':'儲存設定'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Mount ─────────────────────────────────────────────
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
