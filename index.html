@@ -304,7 +304,7 @@ function OrderPage({ cfg, onConfirm, goto }) {
   if (!cfg) return <div className="loading">載入中…</div>;
 
   const products = cfg.products || [];
-  const closed = isPast(cfg.deadline);
+  const closed = isPast(cfg.deadline) || cfg.closed === true;
 
   const key = (pi, vi=-1) => vi===-1 ? `p${pi}` : `p${pi}v${vi}`;
 
@@ -372,7 +372,7 @@ function OrderPage({ cfg, onConfirm, goto }) {
           </div>
         </div>
 
-        {closed && <div className="alert alert-red">⚠️ 此團購已截止，目前無法下單。</div>}
+        {closed && <div className="alert alert-red">⚠️ {cfg.closed ? '此團購已結團，感謝所有參與的朋友！' : '此團購已截止，目前無法下單。'}</div>}
 
         {!closed && <>
           <div className="card">
@@ -697,6 +697,14 @@ function AdminOrders({ cfg, refreshCfg, goto }) {
   const [editOrder, setEditOrder] = useState(null);
   const [newRound, setNewRound] = useState('');
   const [showNewRound, setShowNewRound] = useState(false);
+  const [showFixRound, setShowFixRound] = useState(false);
+  const [allRounds, setAllRounds] = useState([]);
+  const [fixLoading, setFixLoading] = useState(false);
+  const [closingRound, setClosingRound] = useState(false);
+  const [showMigrate, setShowMigrate] = useState(false);
+  const [migrateInfo, setMigrateInfo] = useState(null);
+  const [migrating, setMigrating] = useState(false);
+  const [migrateResult, setMigrateResult] = useState('');
 
   useEffect(()=>{ loadOrders(); }, [view]);
 
@@ -726,13 +734,82 @@ function AdminOrders({ cfg, refreshCfg, goto }) {
 
   const startNewRound = async () => {
     if (!newRound.trim()) return;
-    await saveConfig({...cfg, roundId:genId(), roundName:newRound.trim(), deadline:'', deliveryDate:'', pickupNote:''});
+    await saveConfig({...cfg, roundId:genId(), roundName:newRound.trim(), deadline:'', deliveryDate:'', pickupNote:'', closed:false});
     await refreshCfg();
     setShowNewRound(false); setNewRound('');
     goto('setup');
   };
 
-  const exportCSV = type => {
+  const openFixRound = async () => {
+    setFixLoading(true);
+    setShowFixRound(true);
+    try {
+      const snap = await db.collection('orders').get();
+      const roundMap = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const rid = data.roundId || '（無團次 ID）';
+        const rname = data.roundName || '舊團次';
+        if (!roundMap[rid]) roundMap[rid] = {roundId:rid, roundName:rname, count:0, latest:0};
+        roundMap[rid].count++;
+        if (data.ts > roundMap[rid].latest) roundMap[rid].latest = data.ts;
+      });
+      const sorted = Object.values(roundMap).sort((a,b)=>b.latest-a.latest);
+      setAllRounds(sorted);
+    } catch(e) {}
+    setFixLoading(false);
+  };
+
+  const applyRoundId = async (round) => {
+    await saveConfig({...cfg, roundId:round.roundId, roundName:round.roundName, closed:false});
+    await refreshCfg();
+    setShowFixRound(false);
+    setView('current');
+    loadOrders();
+  };
+
+  const toggleClose = async () => {
+    const nowClosed = cfg?.closed === true;
+    if (!nowClosed && !window.confirm('確定要結團嗎？結團後客人將無法新增下單。')) return;
+    setClosingRound(true);
+    await saveConfig({...cfg, closed: !nowClosed});
+    await refreshCfg();
+    setClosingRound(false);
+  };
+
+  const openMigrate = async () => {
+    setMigrateResult('');
+    setShowMigrate(true);
+    setMigrateInfo(null);
+    try {
+      const snap = await db.collection('orders').get();
+      const outsiders = snap.docs.filter(d => d.data().roundId !== cfg?.roundId);
+      const roundMap = {};
+      outsiders.forEach(d => {
+        const data = d.data();
+        const rname = data.roundName || '（無團次名稱）';
+        if (!roundMap[rname]) roundMap[rname] = 0;
+        roundMap[rname]++;
+      });
+      setMigrateInfo({ total: outsiders.size ?? outsiders.length, byRound: roundMap, docs: outsiders });
+    } catch(e) { setMigrateInfo({error:true}); }
+  };
+
+  const doMigrate = async () => {
+    if (!migrateInfo || !migrateInfo.docs || migrateInfo.docs.length === 0) return;
+    setMigrating(true);
+    try {
+      const batch = db.batch();
+      migrateInfo.docs.forEach(d => {
+        batch.update(d.ref, { roundId: cfg.roundId, roundName: cfg.roundName });
+      });
+      await batch.commit();
+      setMigrateResult(`✓ 成功移轉 ${migrateInfo.docs.length} 筆訂單到本團！`);
+      setMigrateInfo(null);
+      loadOrders();
+    } catch(e) { setMigrateResult('移轉失敗，請再試一次'); }
+    setMigrating(false);
+  };
     if (type==='pickup') {
       const pkeys = Object.keys(prodStats);
       const hdr = ['暱稱','電話',...pkeys,'合計','備註'];
@@ -766,8 +843,21 @@ function AdminOrders({ cfg, refreshCfg, goto }) {
             <div className="scroll-tab active">📋 訂單</div>
             <div className="scroll-tab" onClick={()=>goto('pickup')}>📦 取貨</div>
             <div className="scroll-tab" onClick={()=>goto('setup')}>⚙️ 設定</div>
+            <div className="scroll-tab" onClick={openMigrate} style={{color:'var(--purple)',borderColor:'var(--purple)'}}>⬆ 移轉舊資料</div>
+            <div className="scroll-tab" onClick={openFixRound} style={{color:'var(--amber)'}}>🔧 修復本團</div>
             <div className="scroll-tab" onClick={()=>setShowNewRound(true)}>🔄 開新團</div>
+            <div className="scroll-tab"
+              onClick={toggleClose}
+              style={{color: cfg?.closed?'var(--green)':'var(--red)', borderColor: cfg?.closed?'var(--green)':'var(--red)'}}>
+              {closingRound ? '處理中…' : cfg?.closed ? '▶ 重新開放' : '🔒 結團'}
+            </div>
           </div>
+
+          {cfg?.closed && (
+            <div className="alert alert-red" style={{marginBottom:14}}>
+              🔒 本團已結團，客人目前無法新增下單。點「重新開放」可恢復。
+            </div>
+          )}
 
           <div className="stat-grid">
             <div className="stat-card"><div className="stat-val">{orders.length}</div><div className="stat-lbl">訂單數</div></div>
@@ -839,6 +929,88 @@ function AdminOrders({ cfg, refreshCfg, goto }) {
       </div>
 
       {editOrder && <EditModal order={editOrder} onClose={()=>setEditOrder(null)} onSaved={()=>{ setEditOrder(null); loadOrders(); }} />}
+
+      {showMigrate && (
+        <div className="modal-bg" onClick={()=>{ if(!migrating){ setShowMigrate(false); setMigrateResult(''); }}}>
+          <div className="modal" onClick={e=>e.stopPropagation()}>
+            <div className="modal-title">⬆ 移轉舊資料到本團</div>
+            {migrateResult ? (
+              <>
+                <div className="alert alert-green" style={{marginBottom:16}}>{migrateResult}</div>
+                <button className="btn btn-primary" onClick={()=>{ setShowMigrate(false); setMigrateResult(''); }}>完成</button>
+              </>
+            ) : !migrateInfo ? (
+              <div className="loading" style={{padding:'24px 0'}}>掃描中…</div>
+            ) : migrateInfo.error ? (
+              <div className="alert alert-red">掃描失敗，請重試</div>
+            ) : migrateInfo.docs.length === 0 ? (
+              <>
+                <div className="alert alert-green">所有訂單已經都在本團了，不需要移轉。</div>
+                <button className="btn btn-ghost btn-full" style={{marginTop:8}} onClick={()=>setShowMigrate(false)}>關閉</button>
+              </>
+            ) : (
+              <>
+                <div className="alert alert-amber" style={{marginBottom:14}}>
+                  找到 <b>{migrateInfo.docs.length}</b> 筆訂單不在本團（{cfg?.roundName}），來自以下團次：
+                  <div style={{marginTop:8}}>
+                    {Object.entries(migrateInfo.byRound).map(([rname,cnt])=>(
+                      <div key={rname} style={{fontSize:13}}>・{rname}：{cnt} 筆</div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{background:'var(--red-light)',borderRadius:'var(--r-sm)',padding:'11px 14px',fontSize:13,color:'var(--red)',marginBottom:14}}>
+                  ⚠️ 這是一次性操作，執行後這些訂單的團次 ID 將改為本團，無法還原。請確認這些訂單確實屬於本次開團。
+                </div>
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setShowMigrate(false)} disabled={migrating}>取消</button>
+                  <button className="btn btn-primary" style={{flex:1,background:'var(--purple)'}} onClick={doMigrate} disabled={migrating}>
+                    {migrating ? '移轉中…' : `確認移轉 ${migrateInfo.docs.length} 筆`}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showFixRound && (
+        <div className="modal-bg" onClick={()=>setShowFixRound(false)}>
+          <div className="modal" onClick={e=>e.stopPropagation()}>
+            <div className="modal-title">🔧 修復本團 — 選擇正確團次</div>
+            <div className="alert alert-amber" style={{marginBottom:14}}>
+              系統掃描了 Firestore 中的所有訂單，請點選目前仍在進行中的那一團，將它設為「本團」。
+            </div>
+            {fixLoading ? <div className="loading" style={{padding:'24px 0'}}>掃描中…</div> :
+              allRounds.length === 0
+                ? <div className="empty-state">找不到任何訂單記錄</div>
+                : allRounds.map(r => (
+                  <div key={r.roundId} style={{
+                    background:'var(--bg)', borderRadius:'var(--r-card)', padding:'14px 16px',
+                    marginBottom:9, border:`1.5px solid ${r.roundId===cfg?.roundId?'var(--accent)':'var(--border)'}`,
+                    cursor:'pointer'
+                  }} onClick={()=>applyRoundId(r)}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:15}}>{r.roundName}</div>
+                        <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>
+                          {r.count} 筆訂單 · 最後下單 {fmtTs(r.latest)}
+                        </div>
+                        <div style={{fontSize:11,color:'var(--text-muted)',marginTop:1,fontFamily:'monospace'}}>{r.roundId}</div>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5}}>
+                        {r.roundId===cfg?.roundId && <span className="tag tag-accent">目前設定</span>}
+                        <span className="tag tag-green" style={{cursor:'pointer'}}>設為本團 →</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            }
+            <div style={{marginTop:14}}>
+              <button className="btn btn-ghost btn-full" onClick={()=>setShowFixRound(false)}>取消</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showNewRound && (
         <div className="modal-bg" onClick={()=>setShowNewRound(false)}>
@@ -962,15 +1134,19 @@ function PickupPage({ cfg, onBack }) {
   };
 
   const search = () => {
-    const q = searchPh.trim().replace(/[-\s]/g,'');
-    setResults(orders.filter(o=>o.phone.replace(/[-\s]/g,'')===q));
+    const q = searchPh.trim().toLowerCase().replace(/[-\s]/g,'');
+    if (!q) return;
+    setResults(orders.filter(o =>
+      o.phone.replace(/[-\s]/g,'').includes(q) ||
+      (o.nickname||'').toLowerCase().includes(q)
+    ));
   };
 
   const markPickup = async (id, picked) => {
     setMarking(id);
     await updateOrder(id, {pickedUp:picked, pickedUpAt:picked?Date.now():null});
     await loadOrders();
-    if (results) setResults(prev=>prev.map(o=>o.id===id?{...o,pickedUp:picked}:o));
+    if (results) setResults(prev=>prev.map(o=>o.id===id?{...o,pickedUp:picked,pickedUpAt:picked?Date.now():null}:o));
     setMarking('');
   };
 
@@ -991,24 +1167,38 @@ function PickupPage({ cfg, onBack }) {
 
   const OrderCard = ({o}) => (
     <div className="pickup-result">
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+      {/* 頂部：名字、電話、金額 */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
         <div>
-          <div style={{fontWeight:600,fontSize:15}}>{o.nickname} <span style={{fontWeight:400,fontSize:13,color:'var(--text-muted)'}}>({o.phone})</span></div>
-          {o.pickedUpAt && <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>取貨：{fmtTs(o.pickedUpAt)}</div>}
+          <div style={{fontWeight:700,fontSize:16}}>{o.nickname}</div>
+          <div style={{fontSize:14,color:'var(--text-muted)',marginTop:2}}>📞 {o.phone}</div>
+          <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>下單：{fmtTs(o.ts)}</div>
+          {o.pickedUpAt && <div style={{fontSize:12,color:'var(--green)',marginTop:2}}>取貨：{fmtTs(o.pickedUpAt)}</div>}
         </div>
-        <div style={{fontFamily:'Noto Serif TC',fontSize:18,fontWeight:700,color:'var(--accent)'}}>{fmtMoney(o.total)}</div>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontFamily:'Noto Serif TC',fontSize:20,fontWeight:700,color:'var(--accent)'}}>{fmtMoney(o.total)}</div>
+          {o.pickedUp && <span className="tag tag-green" style={{marginTop:5}}>✓ 已取貨</span>}
+        </div>
       </div>
-      <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:10}}>
-        {(o.items||[]).map((item,i)=>`${item.name}${item.variant?` - ${item.variant}`:''} ×${item.qty}`).join('　')}
-      </div>
-      {o.note && <div style={{fontSize:12,color:'var(--amber)',marginBottom:8}}>備註：{o.note}</div>}
-      {o.pickedUp
-        ? <div style={{display:'flex',gap:8,alignItems:'center'}}>
-            <span className="tag tag-green">✓ 已取貨</span>
-            <button className="btn btn-ghost btn-sm" onClick={()=>markPickup(o.id,false)} disabled={marking===o.id}>撤銷</button>
+      {/* 品項明細 */}
+      <div style={{background:'var(--bg)',borderRadius:'var(--r-sm)',padding:'10px 12px',marginBottom:10}}>
+        {(o.items||[]).map((item,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:14,padding:'4px 0',borderBottom: i<o.items.length-1?'1px solid var(--border)':'none'}}>
+            <span style={{color:'var(--text)'}}>{item.name}{item.variant?` — ${item.variant}`:''} <span style={{color:'var(--text-muted)'}}>×{item.qty}</span></span>
+            <span style={{fontWeight:600,color:'var(--accent)'}}>{fmtMoney(item.subtotal)}</span>
           </div>
+        ))}
+      </div>
+      {o.note && (
+        <div style={{fontSize:13,color:'var(--amber)',background:'var(--amber-light)',borderRadius:'var(--r-sm)',padding:'6px 10px',marginBottom:10}}>
+          💬 備註：{o.note}
+        </div>
+      )}
+      {/* 動作按鈕 */}
+      {o.pickedUp
+        ? <button className="btn btn-ghost btn-sm" onClick={()=>markPickup(o.id,false)} disabled={marking===o.id}>撤銷取貨</button>
         : <button className="btn btn-green btn-full" onClick={()=>markPickup(o.id,true)} disabled={marking===o.id}>
-            {marking===o.id?'處理中…':'✓ 標記已取貨'}
+            {marking===o.id ? '處理中…' : '✓ 標記已取貨'}
           </button>
       }
     </div>
@@ -1036,13 +1226,14 @@ function PickupPage({ cfg, onBack }) {
 
           {loading ? <div className="loading">載入中…</div> : <>
             {tab==='search' && <>
-              <div className="input-row" style={{marginBottom:16}}>
-                <input type="tel" value={searchPh} onChange={e=>setSearchPh(e.target.value)} placeholder="輸入電話搜尋" onKeyDown={e=>e.key==='Enter'&&search()} />
+              <div className="input-row" style={{marginBottom:8}}>
+                <input type="text" value={searchPh} onChange={e=>setSearchPh(e.target.value)} placeholder="輸入電話或暱稱搜尋" onKeyDown={e=>e.key==='Enter'&&search()} />
                 <button className="btn btn-primary" style={{width:'auto',padding:'10px 20px'}} onClick={search}>搜尋</button>
               </div>
+              <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:14}}>支援電話號碼或群組暱稱搜尋</div>
               {results && (
                 results.length===0
-                  ? <div className="empty-state">找不到此電話的訂單</div>
+                  ? <div className="empty-state">找不到符合的訂單</div>
                   : results.map(o=><OrderCard key={o.id} o={o} />)
               )}
             </>}
